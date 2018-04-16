@@ -1,0 +1,664 @@
+---
+title: <span style="font-size:125%; font-family:'Alex Brush'; font-style:normal">R Models</span>
+subtitle: <span style="font-size:125%; font-style:normal; font-variant:small-caps; font-family:'Open Sans'">Quick Reference</span>
+author:  |
+  <span style="font-size:125%; font-style:normal; font-family:'Alex Brush'">Michael Clark</span> <br>
+  <span class="" style="font-size:75%">https://m-clark.github.io</span><br><br>
+output:
+  html_document:
+    css: [css/standard_html.css]
+    number_sections: false
+    df_print: kable
+    fig_caption: yes
+    highlight: pygments
+    theme: sandstone
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapse: section
+      smooth_scroll: false    
+      scroll_highlight: yes
+biblio-style: apalike
+link-citations: yes
+output_dir: "docs"
+description: ""    
+font-import: https://fonts.googleapis.com/css?family=Roboto|Roboto+Mono|Open+Sans|Alex+Brush|Stalemate
+cover-image: img/nineteeneightyR.png
+url: 'https\://m-clark.github.io/' 
+favicon: 'img/R.ico'
+github-repo:  m-clark/
+---
+
+```{r setup, include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(echo = T, eval=F, message=F, warning=F, error=F, comment=NA, R.options=list(width=220),   # code 
+                      dev.args=list(bg = 'transparent'), dev='svglite',                                 # viz
+                      fig.align='center', out.width='75%', fig.asp=.75,                 
+                      cache.rebuild=F, cache=T)                                                         # cache
+```
+
+```{r packages, include=FALSE, cache=FALSE, eval=TRUE}
+library(magrittr); library(tidyverse); library(stringr); library(pander); 
+library(plotly); library(lazerhawk); library(viridis)
+```
+
+
+
+```{r rdoc_api, echo=FALSE, eval=TRUE}
+# Function to get package percentile rank
+get_perc = function(pack) {
+  require(httr)
+  url = paste0('http://rdocumentation.org/api/packages/', pack, '/percentile')
+  out = GET(url) %>% 
+    content()
+  out$percentile
+}
+get_depgraph = function(pack) {
+  require(httr)
+  url = paste0('http://rdocumentation.org/api/packages/', pack, '/reversedependencies')
+  out = GET(url) %>% 
+    content()
+  node_df = data.table::rbindlist(out$nodes, fill = T)
+  edge_df = data.table::rbindlist(out$links, fill = T)
+  list(node_df=node_df, edge_df=edge_df)
+}
+```
+
+THIS DOCUMENT IS A WORK IN PROGRESS. IT IS CURRENTLY NOT EVEN HALF-WAY THROUGH.
+
+# Introduction
+
+This is a quick reference for the modeling syntax and associated packages.  While it covers a lot of ground, it is not meant to be exhaustive, but rather it provides an easy reference for those new to R, someone trying out an unfamiliar technique, or those just interested in comparison to similar approaches in other environments.  In time, this may be rendered obsolete by the [parsnip package](https://github.com/topepo/parsnip), but until then, this can get you quickly started with many common models.
+
+Preference is given to base R functionality or what are perceived as very commonly used packages.  'Very common' is based on my own knowledge consulting across dozens of disciplines along with just regularly following the R community, and things like the rankings at [RDocumentation.org](https://rdocumentation.org), and packages listed in [CRAN Task Views](https://www.rdocumentation.org/taskviews).
+
+
+#### Miscellaneous
+
+I will ignore the data argument in every example.  
+
+What this won't provide:
+
+- data processing required
+- visualization
+- a list of every package that *might* be useful
+
+
+Color coding:
+
+- <span class="emph">emphasis</span>
+- [link]()
+- <span class="pack">package</span>
+- <span class="basepack">package that comes with standard R installation</span>
+- <span class="func">function</span>
+- <span class="objclass">object/class</span>
+
+When you see `pack::func` the first value is the package name and the second the function.  I show this for the first time, but otherwise it is assumed you've loaded the necessary package.
+
+
+# Basics
+
+Most packages follow the same basic modeling syntax, and those who don't generally suffer less usage.  Just specify your target variable, say `y` and your predictor variables, e.g. `x`.  For some packages you may have to instead supply a model.matrix `X` and separate `y` vector (with no data argument).
+
+
+## Standard modeling
+
+```{r basics-standard-modeling}
+model_func(y ~ x, data=mydata)
+model_func(X, y)
+model_func(X)  # unsupervised (e.g. principal components analysis)
+```
+
+Some models may be different enough to warrant their own syntax, e.g. latent variable models/SEM.  However, even then, packages try to adhere to the `y ~ x` formula approach.
+
+## Exploring Results
+
+Most modeling functions, again, those that actually want to be used, will provide the following commonly used methods.
+
+```{r basics-explore}
+summary(my_model)    # may also be just print()
+fitted(my_model)     # fitted values
+residuals(my_model)  # residuals
+predict(my_model, newdata=other_observations, type='response')  # specific predictions
+```
+
+Some may also have a <span class="func">plot</span> method, but this will definitely vary by package both in whether it is available and what it will do.  For example, plotting an <span class="objclass">lm</span> object will explore residuals, while plotting a <span class="objclass">gam</span> will show the component plots of the smoothed terms. Some packages, like <span class="pack">visreg</span> and <span class="pack">margins</span>, will help plotting some types of effects.  I've found it easier to do oneself via <span class="pack">ggplot2</span>, rather than hope you can finagle a plot made by a package into something you actually want.
+
+Many packages will also have a <span class="func">confint</span> method for interval estimates of coefficients.  See the <span class="basepack">boot</span> package as a starting point for bootstrapped intervals.
+
+## Comparing models
+
+Good science will need competing models.  For many models, one can use a likelihood ratio test or something like AIC.
+
+```{r model_comparison}
+anova(mod)
+anova(mod1, mod2)
+
+AIC(mod)
+AIC(mod1, mod2)
+```
+
+Others will be package specific. For example, <span class="basepack">mgcv</span> will supply a GCV (generalized cross-validation) metric, and there is WAIC and loo in <span class="emph">Stan</span>-related packages for Bayesian analysis.
+
+# Linear models and GLM 
+
+Starting with the basics, we can obtain linear models (OLS) or generalized linear models as follows.
+
+```{r glm}
+aov(y ~ x + Error(id))                    # ANOVA with error stratum (e.g. repeated measures for each id)
+lm(y ~ x + z)                             # standard linear model/OLS
+glm(y ~ x + z, family = 'binomial')       # logistic regression with binary response
+glm(y ~ x + z + offset(log(q)), family = 'poisson')  # count/rate model
+```
+
+See also, <span class="pack">rms</span>::<span class="func">ols</span> for the standard model with percs, along with <span class="func">lrm</span> for logistic regression.
+
+
+## Extensions
+
+### Interactions and Variable transformations
+
+Unlike some statistical packages that haven't figured out what year it is, you do not have to make explicit interaction terms.  There are two ways you can do it.
+
+```{r glm-interactions}
+lm(y ~ x*z)
+lm(y ~ x + z + x:z)  # equivalent
+```
+
+There are better approachs to get at nonlinear relationships than with polynomials (variables interacting with themselves), but if interested, one can use <span class="func">poly</span>.  There is also <span class="func">nls</span> for nonlinear least squares.  However, it is rare that one knows the functional form beforehand.  Just because you can fit a quadratic function or logistic growth curve model doesn't mean it's actually the right or best functional form.
+
+```{r glm-polynomial}
+lm(y ~ poly(x, degree=3))
+nls(y ~ SSlogis(log(x), Asym, xmid, scal))  # see ?SSlogis for details
+```
+
+You typically can tranform a variable within the formula itself.
+
+```{r glm-transformations}
+lm(y ~ log(x))
+```
+
+This is fine for quick exploration, but generally it's poor practice to do so (you'll likely need the transformed variable in other contexts), and it simply won't work with some modeling functions.
+
+### Categorical variable
+
+#### Predictors
+
+For categorical predictors, most modeling packages will automatically dummy code any categorical variables.  But you can specify other coding schemes as well.
+
+```{r glm-coding}
+lm(y ~ x)  # x is a factor
+?contrasts
+```
+
+
+#### Ordinal target
+
+Options thin out quickly when you have more than 2 categories for your target variable.  But there is still plenty to play with in R for ordinal and multinomial models.
+
+For ordinal models, the <span class="pack">rms</span> package is a very good starting point. The <span class="pack">ordinal</span> package will add random effects as well, in the familiar <span class="pack">lme4</span> style.
+
+```{r glm-ordinal}
+rms::orm(y ~ x)  # y is ordinal
+ordinal::clmm(y ~ x + (1|g1) + (1|g2), link = "probit", threshold = "equidistant")
+```
+
+
+#### Multinomial
+
+For nominal dependent variables, check out the <span class="pack">mlogit</span> package.  You will almost certainly have some data processing to do beforehand.
+
+```{r glm-multinomial}
+# x: is an generic covariate
+# q: is an individual specific covariate
+# z: is an alternative specific covariate
+mlogit::mlogit(y ~ x|q|z)
+
+?mlogit::mlogit.data
+?mlogit::mFormula
+```
+
+See <span class="pack">mnlogit</span> for a faster approach. Technically the base R package <span class="basepack">nnet</span> will do these models too, but you won't be able to do much with the result.  
+
+### Other distributions
+
+The standard GLM will only take you so far in terms of distributions for the target variable.  To start your journey beyond the exponential family, you might consider the following.  Some packages will provide addtional distributions in similar contexts, and some might be geared entirely toward a specific family.
+
+- <span class="pack">glm.nb</span>: Base R function for the negative binomial
+- <span class="pack">pscl</span>: Zero-inflated and hurdle models
+- <span class="pack">betareg</span>, <span class="pack">dirichletReg</span>: Beta (0, 1) and Dirichlet distributions (e.g. compositional data)
+- <span class="pack">VGAM</span>, <span class="pack">mgcv</span>, <span class="pack">gamlss</span>: Additive modeling packages that come with many additional distributions (e.g. student T, bivariate logit/probit, censored normal, tweedie, multivariate gaussian, etc.)
+
+### Miscellaneous
+
+Some might be interested in quantile regression.  The <span class="pack">quantreg</span> package would be a starting point.  In addition, the <span class="pack">car</span> package has a few miscellaneous functions for various models, e.g. add-variable plots, variance inflation factors, influence metrics, and more.
+
+## Linear models and GLM list of packages
+
+```{r lm_percs, eval=TRUE, echo=FALSE}
+# roughly in order
+rms_perc = get_perc('rms')
+ordinal_perc = get_perc('ordinal')
+mlogit_perc = get_perc('mlogit')
+mnlogit_perc = get_perc('mnlogit')
+nnet_perc = get_perc('nnet')
+mgcv_perc = get_perc('mgcv')
+VGAM_perc = get_perc('VGAM')
+gamlss_perc = get_perc('gamlss')
+pscl_perc = get_perc('pscl')
+betareg_perc = get_perc('betareg')
+dirichletReg_perc = get_perc('dirichletReg')
+quantreg_perc = get_perc('quantreg')
+car_perc = get_perc('car')
+```
+
+
+The following is a list of the packages mentioned in this section and their percentile rank on RDocumentation.
+
+- <span class="pack">rms</span> `r rms_perc`%
+- <span class="pack">ordinal</span> `r ordinal_perc`%
+- <span class="pack">mlogit</span> `r mlogit_perc`%
+- <span class="pack">mnlogit</span> `r mnlogit_perc`%
+- <span class="basepack">nnet</span> `r nnet_perc`%
+- <span class="basepack">mgcv</span> `r mgcv_perc`%
+- <span class="pack">VGAM</span> `r VGAM_perc`%
+- <span class="pack">gamlss</span> `r gamlss_perc`%
+- <span class="pack">pscl</span> `r pscl_perc`%
+- <span class="pack">betareg</span> `r betareg_perc`%
+- <span class="pack">dirichletReg</span> `r dirichletReg_perc`%
+- <span class="pack">quantreg</span> `r quantreg_perc`%
+- <span class="pack">car</span> `r car_perc`%
+
+
+
+
+# Regularization
+
+Not enough people use <span class="emph">regularization</span> in their models to guard against overfitting, and it should be the default approach in my opinion, especially in small data/complex modeling scenarios.  The <span class="pack">glmnet</span> package fits a variety of models, with <span class="emph">lasso</span>, <span class="emph">ridge</span>, or something in between for a penalty.  Not a very user friendly package though.
+
+```{r reg-glmnet}
+glmnet::glmnet(X, y)
+```
+
+
+See also, <span class="pack">elasticnet</span>.  Better yet, go [Bayesian][Bayesian].  Note also that there are actually quite a few packages that will accept a penalty parameter/matrix, but odds are slim you'd know that in advance. 
+
+## Regularization list of packages
+
+```{r reg_percs, eval=TRUE, echo=FALSE}
+glmnet_perc = get_perc('glmnet')
+elasticnet_perc = get_perc('elasticnet')
+```
+
+
+- <span class="pack">glmnet</span> `r glmnet_perc`%
+- <span class="pack">elasticnet</span> `r elasticnet_perc`%
+
+# Mixed models
+
+One of the most common generalizations from the GLM setting regards data dependent situations where observations are correlated with one another due to inherent clustering.  This is most commonly dealth with via <span class="emph">mixed models</span>.  You can find detailed examples in my document [here](https://m-clark.github.io/mixed-models-with-R).
+
+## nlme
+
+The nlme package  comes with base R.  It does standard linear and nonlinear (in the predictors) mixed models. It can add correlation structure (e.g. temporal (e.g. corAR) and spatial (e.g. corGaus)), as well as heterogenous variances (e.g. varIdent). It can also do nonlinear models of specific functional forms (e.g. SSlogis).  However, it cannot generalize beyond a non-normal distribution.
+
+```{r nlme}
+nlme::lme(y ~ x, random = ~ 1|group)       # basic model
+lme(y ~ x, random = ~ 1 + x|group)         # add random slopes
+lme(y ~ x, random = list(~ 1|g1, ~ 1|g2))  # different random effects
+```
+
+
+In addition, one can get at additional correlation/variance structure, though it may not be very intuitive.  The first line examines heterogenous variances across some grouping factor `q`.  The other demonstrates an autoregressive correlation structure.
+
+```{r nlme_cor}
+lme(y ~ x, random = ~ 1|group, weights = varIdent(form=~1|q))
+lme(y ~ x, random = ~ 1|group, correlation = corAR1(form=~1|q))
+```
+
+
+## lme4
+
+The lme4 package is one of the most widely used modeling packages in R.  It's the best tool for mixed models, and I've used many within R and beyond.  It doesn't do everything, but it does a lot, and fast.  It serves most people's needs just fine.  Beyond that, many other packages work or depend on it, and other packages that extend lme4 will use the same modeling syntax.
+
+In contrast to nlme, <span class="pack">lme4</span> is very efficient but does not have the capability (in a practical way) to do things like further examination of residual structure.  It does however extend the models to the GLM familys (and negative binomial with glmer.nb).
+
+```{r lme4}
+lme4::lmer(y ~ x + (1|group))
+lmer(y ~ x + (1|g1) + (1|g2))
+lmer(y ~ x + (1 + x|group))
+glmer(y ~ x + (1|group), family = 'binomial')
+```
+
+Note that if you're labeling your data correctly, it doesn't matter to lme4 whether the clustering is nested or crossed.  However if you give the nested clusters the same labels (e.g. 1,2,3,4 in every A, B, C), you'll need to note this.
+
+```{r lme4_nest}
+lmer(y ~ x + (1|group/nested_group))
+lmer(y ~ x + (1|group) + (1|group:nested_group))
+```
+
+Again though, you shouldn't label your data such that the same label can refer to multiple things.
+
+
+
+
+### lme4 extensions
+
+The following is a graph of packages that have a connection to lme4 directly (thick lines) or indirectly, and gives a sense that you'll have a lot to work with should you use this package.  Zoom in to see package names
+
+```{r lme4_getgraph, eval=TRUE, echo=FALSE}
+lme4_depgraph = get_depgraph('lme4')
+```
+
+```{r lme4_graph, echo=F, eval=T}
+nodes = lme4_depgraph$node_df %>% 
+  rename(label=name) %>% 
+  rownames_to_column(var='id') %>% 
+  mutate(id=as.integer(id)-1)
+edges = lme4_depgraph$edge_df %>% 
+  rename(from=source,
+         to=target)
+
+adj_mat = create_adjacency(edges, n1 = 'from', n2='to')
+
+library(igraph)
+deg = degree(graph.adjacency(adj_mat))
+deg = data.frame(id = as.integer(names(deg))-1,  # for some reason something is zero
+                 value=deg)
+nodes = left_join(nodes, deg) %>% 
+  mutate(value = ifelse(is.na(value), min(value, na.rm = T), value),
+         value = value-min(value)+1)
+
+
+visNetwork::visNetwork(nodes = nodes, edges=edges)
+```
+
+
+You'll note in the graph one of the relatively large nodes regards the car package. People use that because lme4 won't give you p-values.  You don't need them though, because you can just use confint to get the interval estimates, e.g. via bootstrap.  The merTools package provides a more efficient approach to interval estimation, and in my experience is more like what you'd get with a Bayesian approach.
+
+Here are some other useful packages:
+
+<span class="pack">merTools</span>: extracting useful information from and exploring the implications of <span class="objclass">merMod</span> objects 
+<span class="pack">lmertest</span>: likelihood ratio and other tests
+<span class="pack">flexmix</span>: mixture mixed models (e.g. latent class growth/trajectory)
+<span class="pack">mediation</span>: mediation models with <span class="objclass">merMod</span> objects
+<span class="basepack">mgcv</span>: additive mixed models (also via <span class="basepack">nlme</span>)
+<span class="pack">brms</span>: Bayesian approach with the same syntax
+
+## The mixed model object
+
+Several mixed model packages have the same methods to extract certain features.
+
+```{r mm_objects}
+fixef(model)       # fixed effects coefficient
+ranef(model)       # random effects coefficient
+VarCorr(model)     # variance components
+```
+
+
+## Related models
+
+You won't find much in the way of so-called <span class="emph">fixed effects models</span> (for panel data) in R, but the <span class="pack">plm</span> package does this .  The <span class="pack">geepack</span> will allow for GEE models to analyse data with various types of covariance structures.  And if all you want to do is correct your standard errors ('cluster-robust'), consider <span class="pack">sandwich</span>.
+
+## Still other packages
+
+We've mentioned <span class="pack">mgcv</span> (more detail later) and <span class="pack">ordinal.</span> One of the <span class="pack">lme4</span> developers is extending things to more complex models with <span class="pack">glmmTMB</span>.
+
+## Mixed models list of packages
+
+I have [several documents](http://m-clark.github.io/documents/#mixed-models) demonstrating mixed models for further exploration.
+
+
+```{r mixed_percs, eval=TRUE, echo=FALSE}
+nlme_perc = get_perc('nlme')
+lme4_perc = get_perc('lme4')
+plm_perc = get_perc('plm')
+geepack_perc = get_perc('geepack')
+sandwich_perc = get_perc('sandwich')
+mgcv_perc = get_perc('mgcv')
+ordinal_perc = get_perc('ordinal')
+```
+
+
+- <span class="basepack">nlme</span> `r nlme_perc`%
+- <span class="pack">lme4</span> `r lme4_perc`%
+- <span class="pack">plm</span> `r plm_perc`%
+- <span class="pack">geepack</span> `r geepack_perc`%
+- <span class="pack">sandwich</span> `r sandwich_perc`%
+- <span class="pack">ordinal</span> `r ordinal_perc`%
+- <span class="pack">mgcv</span> `r mgcv_perc`%
+
+# Additive models
+
+<span class="emph">Generalized additive models</span> incorporate nonlinear, random, and spatial effects all under one roof.  One of the most powerful modeling packages in the R universe, the excellently named Mixed-GAM Computational Vehicle (<span class="pack">mgcv</span>), focuses on these, and even comes with the standard R installation!  
+
+My own opinion is that GAMs should be one's baseline model, as they allow for more complex modeling but penalize that complexity to help guard against overfitting.  Furthermore, assuming a linear relationship for everything is overly simplistic at best.  GAMs also have close connections to mixed models, so can be seen as an extension of those.  You can find detailed examples of GAMs in my document [here](https://m-clark.github.io/generalized-additive-models).
+
+```{r gam}
+mgcv::gam(y ~ s(x))
+gam(y ~ s(x), family = 'nb')                      # different family (negative binomial)
+gam(y ~ s(x, k=20))                               # allow for more wiggles!
+gam(y ~ s(x, by='group'))                         # different wiggles per group
+gam(y ~ s(x, z))                                  # interaction
+gam(y ~ s(x, bs='cc'))                            # alternate spline (cyclic cubic)
+gam(y ~ s(group, bs='re'))                        # random effect with factor variable
+gam(y ~ s(area, bs='mrf', xt=neighborhood_list))  # discrete spatial random effect
+```
+
+Once you run the model, you'll want to explore it.
+
+```{r gam-explore}
+gam.check(model)    # Did I let it get wiggly enough?
+plot(model)         # Visualize effects
+concurvity(model)   # the GAM form of collinearity
+```
+
+
+
+The package also comes with two means of modeling mixed effect models directly, with <span class="pack">nlme</span> support via the <span class="func">gamm</span> function, and the with <span class="pack">lme4</span> support via the <span class="pack">gamm4</span> package.  With the former one can also get at temporal autocorrelation as well via the `correlation` argument.  There is capability to deal with missing values, multivariate outcomes, and handle large data sets. If you don't use smooth terms, <span class="pack">mgcv</span> can simply be seen as a means to model additional distributional families.  
+
+
+### Extensions and other considerations
+
+Most of the R community uses <span class="pack">ggplot2</span> to explore their data visually.  The package comes with <span class="func">geom_smooth</span>, which can actually use <span class="pack">mgcv</span> to display a nonlinear relationship between two variables.  Unfortunately it is only triggered automatically for large samples (> 1000), but you can always use it if desired via the `method` argument. You can even use the various arguments for the smooth term function.
+
+```{r gam-ggplot}
+ggplot2::ggplot(aes(x, y)) +
+  geom_smooth(method = 'gam')
+
+ggplot(aes(x, y)) +
+  geom_smooth(method = 'gam', formula = y ~ s(x, bs='gp'))
+```
+
+I'll speak more about the package in the Bayesian section, but you can also use the <span class="func">s</span> function when using <span class="pack">brms</span>[^jagam].  Honestly, between those two packages and their respective capabilities, you'll likely need little more for your statistical modeling.  I personally use them all the time.
+
+At one time both <span class="pack">gamlss</span> and <span class="pack">VGAM</span> extended GAMs beyond what <span class="pack">mgcv</span> could do, and they still have some modeling capabilities not seen in <span class="pack">mgcv</span>, e.g. other distributional families.  However, <span class="pack">mgcv</span> has since made up some of the more important differences.  Also, I still see some using the R-core <span class="func">spline</span> function and <span class="pack">splines</span> package.  There is nothing to be gained there however.  There is also the <span class="pack">gam</span> package, by Trevor Hastie, the person who wrote one of the most widely cited works on the technique.  While it certainly does the job, it's not on the level of <span class="pack">mgcv</span> in terms of what all it can do.  Unfortunately some packages that use GAMs use it instead of <span class="pack">mgcv</span>, so you won't have all the nice functionality.
+
+In my document I quote Shalizi who I think sums up the reason to use GAMs nicely. So I'll do so again here.
+
+> With modern computing power, there are very few situations in which it is actually better to do linear regression than to fit an additive model. In fact, there seem to be only two good reasons to prefer linear models.<br> <br>
+Our data analysis is guided by a credible scientific theory which asserts linear relationships among the variables we measure (not others, for which our observables serve as imperfect proxies).<br> <br>
+Our data set is so massive that either the extra processing time, or the extra computer memory, needed to fit and store an additive rather than a linear model is prohibitive.<br> <br>
+Even when the first reason applies, and we have good reasons to believe a linear theory, the truly scientific thing to do would be to check linearity, by fitting a flexible non-linear model and seeing if it looks close to linear. Even when the second reason applies, we would like to know how much bias we’re introducing by using linear predictors, which we could do by randomly selecting a subset of the data which is small enough for us to manage, and fitting an additive model. <br> <br>
+In the vast majority of cases when users of statistical software fit linear models, neither of these justifications applies: theory doesn’t tell us to expect linearity, and our machines don’t compel us to use it. Linear regression is then employed for no better reason than that users know how to type lm but not gam. You now know better, and can spread the word.
+
+
+```{r gam_percs, eval=TRUE, echo=FALSE}
+splines_perc = get_perc('splines')
+gamlss_perc = get_perc('gamlss')
+VGAM_perc = get_perc('VGAM')
+gam_perc = get_perc('gam')
+splines_perc = get_perc('splines')
+```
+
+
+## Additive models list of packages
+
+- <span class="pack">mgcv</span> `r mgcv_perc`%
+- <span class="pack">gam</span> `r gam_perc`%
+- <span class="pack">gamlss</span> `r gamlss_perc`%
+- <span class="pack">VGAM</span> `r VGAM_perc`%
+- <span class="pack">splines</span>  `r splines_perc`%
+
+
+# Survival
+
+<span class="basepack">survival</span>, <span class="pack">rms</span>
+
+# Survey weighting
+
+Don't use the weights argument in lm/glm.
+survey
+
+# Principal components
+
+princomp, svd
+principal
+pcaMethods
+
+# Factor analysis
+
+factanal
+fa
+ltm
+
+
+See [SEM][Structural Equation Modeling] section
+
+# Structural Equation Modeling
+
+lavaan
+
+## Path Analysis
+## Confirmatory Factor Analysis
+## SEM
+
+psych
+lavaan
+lava
+mediation
+MplusAutomation
+
+# Graphical models
+
+[Graphical Model Task View](https://www.rdocumentation.org/taskviews#gR)
+
+ggm
+bnlearn
+network sna 
+
+igraph
+networkd3
+visnetwork
+Diagrammer
+
+# Mixture models and cluster analysis
+
+<span class="pack">Mclust</span>
+<span class="pack">flexmix</span>
+<span class="pack">hmm</span>
+<span class="pack">polca</span>
+<span class="pack">clusterSim</span>
+
+<span class="basepack">cluster</span>
+<span class="basepack">kmeans</span>
+<span class="basepack">hclust</span>
+<span class="basepack">dist</span>
+
+```{r cluster_percs, eval=TRUE, echo=FALSE}
+Mclust_perc = get_perc('Mclust')
+flexmix_perc = get_perc('flexmix')
+hmm_perc = get_perc('hmm')
+polca_perc = get_perc('polca')
+clusterSim_perc = get_perc('clusterSim')
+cluster_perc = get_perc('cluster')
+```
+
+
+- <span class="pack">Mclust</span> `r Mclust_perc`%
+- <span class="pack">flexmix</span> `r flexmix_perc`%
+- <span class="pack">hmm</span> `r hmm_perc`%
+- <span class="pack">polca</span> `r polca_perc`%
+- <span class="pack">clusterSim</span> `r clusterSim_perc`%
+- <span class="basepack">cluster</span> `r cluster_perc`%
+
+
+
+# Time series
+
+xts, forecast, prophet, lubridate, tseries, arima
+
+
+```{r ts-funcs}
+acf
+lag
+posix
+as.Date()
+```
+
+# Spatial models
+sf
+sp
+spdep
+mgcv
+
+
+
+# Machine learning
+You can find detailed examples in my document [here](https://m-clark.github.io/introduction-to-machine-learning).
+
+[Machine Learning Task View](https://www.rdocumentation.org/taskviews#MachineLearning)
+
+e1071
+caret
+mlr
+glmnet
+randomForest
+gbm
+xgboost
+lime
+
+# Bayesian
+
+[Bayesian Task View](https://www.rdocumentation.org/taskviews#Bayesian)
+
+rjags
+r2OpenBugs
+coda
+MCMCpack
+MCMCglmm
+R-INLA
+
+## Stan
+
+rstan
+rstanarm
+brms
+
+## Other
+greta
+
+
+
+# Text
+
+You can find detailed examples in my document [here](https://m-clark.github.io/text-analysis-with-R).
+
+[Task View](https://www.rdocumentation.org/taskviews#NaturalLanguageProcessing)
+
+
+tidytext
+text2vec
+stringdist
+
+tm
+lda
+topicmodels
+keras
+
+# Ecological
+[Task View](https://www.rdocumentation.org/taskviews#Environmetrics)
+vegan
+
+
+
+[^jagam]: There is the <span class="func">jagam</span> function in <span class="pack">mgcv</span> to use JAGS, but I can't think of a reason to use it over <span class="pack">brms</span>.
