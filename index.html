@@ -260,7 +260,7 @@ div.tocify {
 <p>Preference is given to base R functionality or what are perceived as very commonly used packages. ‘Very common’ is based on my own knowledge consulting across dozens of disciplines along with just regularly following the R community, and things like the rankings at <a href="https://rdocumentation.org">RDocumentation.org</a>, and packages listed in <a href="https://www.rdocumentation.org/taskviews">CRAN Task Views</a>.</p>
 <div id="miscellaneous" class="section level4">
 <h4>Miscellaneous</h4>
-<p>I will ignore the data argument in every example.</p>
+<p>I will ignore the data argument in every example. It is implied that you would supply it.</p>
 <p>What this won’t provide:</p>
 <ul>
 <li>data processing required</li>
@@ -277,7 +277,7 @@ div.tocify {
 <li><span class="func">function</span></li>
 <li><span class="objclass">object/class</span></li>
 </ul>
-<p>When you see <code>pack::func</code> the first value is the package name and the second the function. I show this for the first time, but otherwise it is assumed you’ve loaded the necessary package.</p>
+<p>When you see <code>pack::func</code> the first value is the package name and the second the function. I show this for the first time to make clear what package is used, but otherwise it is assumed you’ve loaded the necessary package (<code>library(mypackage)</code>).</p>
 </div>
 </div>
 <div id="basics" class="section level1">
@@ -554,6 +554,7 @@ dd =<span class="st"> </span>rms<span class="op">::</span><span class="kw">datad
 <span class="kw">nomogram</span>(model)                      <span class="co"># yep, nomogram</span></code></pre></div>
 <p>Along with the extensions that rms provides, you might also find something of use in packages like <span class="pack">Epi</span>, <span class="pack">epitools</span>, or <span class="pack">epiR</span>. In addition, while the biostats world seems high on splines for their survival models (see e.g. <code>?rms::rcs</code>), and so you can incorporate them easily with the models above, likewise some of the additive models packages like <span class="pack">mgcv</span> have functionality for survival analysis.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mgcv<span class="op">::</span><span class="kw">gam</span>(time <span class="op">~</span><span class="st"> </span><span class="kw">s</span>(x), <span class="dt">weights =</span> status, <span class="dt">family =</span> cox.ph)</code></pre></div>
+<p>And finally, you can find survival models in the machine learning context, e.g. with a package like <span class="pack">randomForestSRC</span>.</p>
 <div id="survival-analysis-list-of-packages" class="section level2">
 <h2>Survival analysis list of packages</h2>
 <p><a href="https://www.rdocumentation.org/taskviews#Survival">Survival Task View</a></p>
@@ -574,7 +575,28 @@ dd =<span class="st"> </span>rms<span class="op">::</span><span class="kw">datad
 </div>
 <div id="survey-weighting" class="section level1">
 <h1>Survey weighting</h1>
-<p>Don’t use the weights argument in lm/glm. survey</p>
+<p>Many data sets in the social sciences are the result of a <span class="emph">survey design</span>, where certain geographic regions and populations are sampled in precise ways. With the survery weights, one can make more appropriate inferences to the population from which the data was drawn.</p>
+<p>I don’t have a lot of experience here, but can at least show a demo and provide some resources. The first issue is setting up the survey design. Your data will presumably have the weights and other necessary information (e.g. the finite population correction).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># no clusters, stratified, with finite populaton correction</span>
+dstrat =<span class="st"> </span>survey<span class="op">::</span><span class="kw">svydesign</span>(<span class="dt">id=</span><span class="op">~</span><span class="dv">1</span>, <span class="dt">strata=</span><span class="op">~</span>stype, <span class="dt">weights=</span><span class="op">~</span>pw, <span class="dt">fpc=</span><span class="op">~</span>fpc)
+
+dclus =<span class="st"> </span><span class="kw">svydesign</span>(<span class="dt">id=</span><span class="op">~</span>clus, <span class="dt">weights=</span><span class="op">~</span>pw)       <span class="co"># clustered design</span>
+
+<span class="kw">svymean</span>(<span class="op">~</span>y, dclus, <span class="dt">deff=</span><span class="ot">TRUE</span>)                  <span class="co"># survey weighted mean</span>
+<span class="kw">svytotal</span>(<span class="op">~</span>z, dclus, <span class="dt">deff=</span><span class="ot">TRUE</span>)                 <span class="co"># survey weighted total</span>
+<span class="kw">svyratio</span>(<span class="dt">numerator =</span> <span class="op">~</span>y, <span class="dt">denominator=</span> <span class="op">~</span>z, dclus, <span class="dt">deff=</span><span class="ot">TRUE</span>)    <span class="co"># survey weighted ratio</span>
+<span class="kw">svyglm</span>(y <span class="op">~</span><span class="st"> </span>x, <span class="dt">data=</span>dstrat, <span class="dt">family=</span><span class="st">'binomial'</span>)  <span class="co"># standard glm</span></code></pre></div>
+<p>There are also some other models like survival models, factor analysis, and more. One thing I can also mention- don’t use the <code>weights</code> argument in the base R <span class="func">lm/glm</span> functions with survey weights. That argument refers to a different type of weight (inverse variance).</p>
+<div id="survey-analysis-list-of-packages" class="section level2">
+<h2>Survey analysis list of packages</h2>
+<ul>
+<li><span class="pack">survey</span> 98%</li>
+</ul>
+</div>
+<div id="survey-analysis-recommended-reading" class="section level2">
+<h2>Survey analysis recommended reading</h2>
+<p><span class="citation">Lumley (<a href="#ref-lumley2011complex">2011</a>)</span></p>
+</div>
 </div>
 <div id="principal-components" class="section level1">
 <h1>Principal components</h1>
@@ -662,12 +684,18 @@ posix
 <div id="ecological" class="section level1">
 <h1>Ecological</h1>
 <p><a href="https://www.rdocumentation.org/taskviews#Environmetrics">Task View</a> vegan</p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
 <div id="refs" class="references">
 <div id="ref-gelman_arm">
 <p>Gelman, Andrew, and Jennifer Hill. 2006. <em>Data Analysis Using Regression and Multilevel/Hierarchical Models</em>. Cambridge University Press.</p>
 </div>
 <div id="ref-harrell2015">
 <p>Harrell, Frank E. 2015. <em>Regression Modeling Strategies</em>. 2nd ed. Springer.</p>
+</div>
+<div id="ref-lumley2011complex">
+<p>Lumley, Thomas. 2011. <em>Complex Surveys: A Guide to Analysis Using R</em>. Vol. 565. John Wiley &amp; Sons.</p>
 </div>
 <div id="ref-wood_generalized_2017">
 <p>Wood, Simon N. 2017. <em>Generalized Additive Models: An Introduction with R</em>. 2nd ed. CRC press.</p>

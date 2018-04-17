@@ -75,7 +75,7 @@ Preference is given to base R functionality or what are perceived as very common
 
 #### Miscellaneous
 
-I will ignore the data argument in every example.  
+I will ignore the data argument in every example. It is implied that you would supply it. 
 
 What this won't provide:
 
@@ -95,7 +95,7 @@ Color coding:
 - <span class="func">function</span>
 - <span class="objclass">object/class</span>
 
-When you see `pack::func` the first value is the package name and the second the function.  I show this for the first time, but otherwise it is assumed you've loaded the necessary package.
+When you see `pack::func` the first value is the package name and the second the function.  I show this for the first time to make clear what package is used, but otherwise it is assumed you've loaded the necessary package (`library(mypackage)`).
 
 
 # Basics
@@ -591,6 +591,7 @@ Along with the extensions that rms provides, you might also find something of us
 mgcv::gam(time ~ s(x), weights = status, family = cox.ph)
 ```
 
+And finally, you can find survival models in the machine learning context, e.g. with a package like <span class="pack">randomForestSRC</span>.
 
 ## Survival analysis list of packages
 
@@ -620,8 +621,36 @@ epiR_perc = get_perc('epiR')
 
 # Survey weighting
 
-Don't use the weights argument in lm/glm.
-survey
+Many data sets in the social sciences are the result of a <span class="emph">survey design</span>, where certain geographic regions and populations are sampled in precise ways.  With the survery weights, one can make more appropriate inferences to the population from which the data was drawn.
+
+I don't have a lot of experience here, but can at least show a demo and provide some resources.  The first issue is setting up the survey design.  Your data will presumably have the weights and other necessary information (e.g. the finite population correction).
+
+```{r survey_glm}
+# no clusters, stratified, with finite populaton correction
+dstrat = survey::svydesign(id=~1, strata=~stype, weights=~pw, fpc=~fpc)
+
+dclus = svydesign(id=~clus, weights=~pw)       # clustered design
+
+svymean(~y, dclus, deff=TRUE)                  # survey weighted mean
+svytotal(~z, dclus, deff=TRUE)                 # survey weighted total
+svyratio(numerator = ~y, denominator= ~z, dclus, deff=TRUE)    # survey weighted ratio
+svyglm(y ~ x, data=dstrat, family='binomial')  # standard glm
+```
+
+There are also some other models like survival models, factor analysis, and more.  One thing I can also mention- don't use the `weights` argument in the base R <span class="func">lm/glm</span> functions with survey weights.  That argument refers to a different type of weight (inverse variance).
+
+
+## Survey analysis list of packages
+
+```{r survey_percs, eval=TRUE, echo=FALSE}
+survey_perc = get_perc('survey')
+```
+
+- <span class="pack">survey</span> `r survey_perc`%
+
+## Survey analysis recommended reading
+
+@lumley2011complex
 
 # Principal components
 
@@ -786,5 +815,6 @@ keras
 vegan
 
 
+# References
 
 [^jagam]: There is the <span class="func">jagam</span> function in <span class="pack">mgcv</span> to use JAGS, but I can't think of a reason to use it over <span class="pack">brms</span>.
