@@ -1,8 +1,8 @@
 ---
-title: <span style="font-size:125%; font-family:'Alex Brush'; font-style:normal">R Models</span>
-subtitle: <span style="font-size:125%; font-style:normal; font-variant:small-caps; font-family:'Open Sans'">Quick Reference</span>
+title: <span style="font-size:125%; font-family:'Questrial'; font-style:normal"><img src='img/198R.png' style="display:inline; vertical-align:bottom; height:1.25em; width:1.25em" ></img> Models</span>
+subtitle: <span style="font-size:125%; font-style:normal; font-variant:small-caps; font-family:'Questrial'">Quick Reference</span>
 author:  |
-  <span style="font-size:125%; font-style:normal; font-family:'Alex Brush'">Michael Clark</span> <br>
+  <span style="font-size:125%; font-style:normal; font-family:'Questrial'">Michael Clark</span> <br>
   <span class="" style="font-size:75%">https://m-clark.github.io</span><br><br>
 output:
   html_document:
@@ -18,6 +18,7 @@ output:
       collapse: section
       smooth_scroll: false    
       scroll_highlight: yes
+bibliography: refs.bib
 biblio-style: apalike
 link-citations: yes
 output_dir: "docs"
@@ -38,7 +39,7 @@ knitr::opts_chunk$set(echo = T, eval=F, message=F, warning=F, error=F, comment=N
 
 ```{r packages, include=FALSE, cache=FALSE, eval=TRUE}
 library(magrittr); library(tidyverse); library(stringr); library(pander); 
-library(plotly); library(lazerhawk); library(viridis)
+library(plotly); library(lazerhawk); library(viridis); library(visNetwork)
 ```
 
 
@@ -81,6 +82,8 @@ What this won't provide:
 - data processing required
 - visualization
 - a list of every package that *might* be useful
+
+For some content I will provide recommended reading.
 
 
 Color coding:
@@ -150,7 +153,7 @@ glm(y ~ x + z, family = 'binomial')       # logistic regression with binary resp
 glm(y ~ x + z + offset(log(q)), family = 'poisson')  # count/rate model
 ```
 
-See also, <span class="pack">rms</span>::<span class="func">ols</span> for the standard model with percs, along with <span class="func">lrm</span> for logistic regression.
+See also, <span class="pack">rms</span>::<span class="func">ols</span> for the standard model with perks, along with <span class="func">lrm</span> for logistic regression.
 
 
 ## Extensions
@@ -164,14 +167,14 @@ lm(y ~ x*z)
 lm(y ~ x + z + x:z)  # equivalent
 ```
 
-There are better approachs to get at nonlinear relationships than with polynomials (variables interacting with themselves), but if interested, one can use <span class="func">poly</span>.  There is also <span class="func">nls</span> for nonlinear least squares.  However, it is rare that one knows the functional form beforehand.  Just because you can fit a quadratic function or logistic growth curve model doesn't mean it's actually the right or best functional form.
+There are better approaches to get at nonlinear relationships than with polynomials (variables interacting with themselves), but if interested, one can use <span class="func">poly</span>.  There is also <span class="func">nls</span> for nonlinear least squares.  However, it is rare that one knows the functional form beforehand.  Just because you can fit a quadratic function or logistic growth curve model doesn't mean it's actually the right or best functional form.
 
 ```{r glm-polynomial}
 lm(y ~ poly(x, degree=3))
 nls(y ~ SSlogis(log(x), Asym, xmid, scal))  # see ?SSlogis for details
 ```
 
-You typically can tranform a variable within the formula itself.
+You typically can transform a variable within the formula itself.
 
 ```{r glm-transformations}
 lm(y ~ log(x))
@@ -221,7 +224,7 @@ See <span class="pack">mnlogit</span> for a faster approach. Technically the bas
 
 ### Other distributions
 
-The standard GLM will only take you so far in terms of distributions for the target variable.  To start your journey beyond the exponential family, you might consider the following.  Some packages will provide addtional distributions in similar contexts, and some might be geared entirely toward a specific family.
+The standard GLM will only take you so far in terms of distributions for the target variable.  To start your journey beyond the exponential family, you might consider the following.  Some packages will provide additional distributions in similar contexts, and some might be geared entirely toward a specific family.
 
 - <span class="pack">glm.nb</span>: Base R function for the negative binomial
 - <span class="pack">pscl</span>: Zero-inflated and hurdle models
@@ -295,11 +298,11 @@ elasticnet_perc = get_perc('elasticnet')
 
 # Mixed models
 
-One of the most common generalizations from the GLM setting regards data dependent situations where observations are correlated with one another due to inherent clustering.  This is most commonly dealth with via <span class="emph">mixed models</span>.  You can find detailed examples in my document [here](https://m-clark.github.io/mixed-models-with-R).
+One of the most common generalizations from the GLM setting regards data dependent situations where observations are correlated with one another due to inherent clustering.  This is most commonly dealt with via <span class="emph">mixed models</span>.  You can find detailed examples in my document [here](https://m-clark.github.io/mixed-models-with-R).
 
 ## nlme
 
-The nlme package  comes with base R.  It does standard linear and nonlinear (in the predictors) mixed models. It can add correlation structure (e.g. temporal (e.g. corAR) and spatial (e.g. corGaus)), as well as heterogenous variances (e.g. varIdent). It can also do nonlinear models of specific functional forms (e.g. SSlogis).  However, it cannot generalize beyond a non-normal distribution.
+The <span class="pack">nlme</span> package  comes with base R.  It does standard linear and nonlinear (in the predictors) mixed models. It can add correlation structure (e.g. temporal (e.g. <span class="func">corAR</span>) and spatial (e.g. <span class="func">corGaus</span>)), as well as heterogeneous variances (e.g. <span class="func">varIdent</span>). It can also do nonlinear models of specific functional forms (e.g. <span class="func">SSlogis</span>).  However, it cannot generalize beyond the gaussian distribution.
 
 ```{r nlme}
 nlme::lme(y ~ x, random = ~ 1|group)       # basic model
@@ -308,7 +311,7 @@ lme(y ~ x, random = list(~ 1|g1, ~ 1|g2))  # different random effects
 ```
 
 
-In addition, one can get at additional correlation/variance structure, though it may not be very intuitive.  The first line examines heterogenous variances across some grouping factor `q`.  The other demonstrates an autoregressive correlation structure.
+In addition, one can get at additional correlation/variance structure, though it may not be very intuitive.  The first line examines heterogeneous variances across some grouping factor `q`.  The other demonstrates an autoregressive correlation structure.
 
 ```{r nlme_cor}
 lme(y ~ x, random = ~ 1|group, weights = varIdent(form=~1|q))
@@ -320,7 +323,7 @@ lme(y ~ x, random = ~ 1|group, correlation = corAR1(form=~1|q))
 
 The lme4 package is one of the most widely used modeling packages in R.  It's the best tool for mixed models, and I've used many within R and beyond.  It doesn't do everything, but it does a lot, and fast.  It serves most people's needs just fine.  Beyond that, many other packages work or depend on it, and other packages that extend lme4 will use the same modeling syntax.
 
-In contrast to nlme, <span class="pack">lme4</span> is very efficient but does not have the capability (in a practical way) to do things like further examination of residual structure.  It does however extend the models to the GLM familys (and negative binomial with glmer.nb).
+In contrast to nlme, <span class="pack">lme4</span> is very efficient but does not have the capability (in a practical way) to do things like further examination of residual structure.  It does however extend the models to the GLM family (and negative binomial with glmer.nb).
 
 ```{r lme4}
 lme4::lmer(y ~ x + (1|group))
@@ -369,7 +372,7 @@ nodes = left_join(nodes, deg) %>%
          value = value-min(value)+1)
 
 
-visNetwork::visNetwork(nodes = nodes, edges=edges)
+visNetwork(nodes = nodes, edges=edges)
 ```
 
 
@@ -427,6 +430,10 @@ ordinal_perc = get_perc('ordinal')
 - <span class="pack">ordinal</span> `r ordinal_perc`%
 - <span class="pack">mgcv</span> `r mgcv_perc`%
 
+## Mixed models recommended reading
+
+@gelman_arm
+
 # Additive models
 
 <span class="emph">Generalized additive models</span> incorporate nonlinear, random, and spatial effects all under one roof.  One of the most powerful modeling packages in the R universe, the excellently named Mixed-GAM Computational Vehicle (<span class="pack">mgcv</span>), focuses on these, and even comes with the standard R installation!  
@@ -459,7 +466,46 @@ The package also comes with two means of modeling mixed effect models directly, 
 
 ### Extensions and other considerations
 
-Most of the R community uses <span class="pack">ggplot2</span> to explore their data visually.  The package comes with <span class="func">geom_smooth</span>, which can actually use <span class="pack">mgcv</span> to display a nonlinear relationship between two variables.  Unfortunately it is only triggered automatically for large samples (> 1000), but you can always use it if desired via the `method` argument. You can even use the various arguments for the smooth term function.
+It took a while, but people have finally started to realize the power of mgcv.
+
+```{r mgcv_getgraph, eval=TRUE, echo=FALSE}
+mgcv_depgraph = get_depgraph('mgcv')
+```
+
+```{r mgcv_graph, echo=F, eval=T}
+nodes = mgcv_depgraph$node_df %>% 
+  rename(label=name) %>% 
+  rownames_to_column(var='id') %>% 
+  mutate(id=as.integer(id)-1)
+edges = mgcv_depgraph$edge_df %>% 
+  rename(from=source,
+         to=target)
+
+edge_trim = edges %>% 
+  filter(to == 0)
+visNetwork(nodes = nodes %>% 
+                         filter(id %in% c(0, edge_trim$from)) %>% 
+                         mutate(value=c(100, rep(0, nrow(.)-1))), 
+                       edges=edge_trim) %>% 
+  visEdges(color=list(opacity=.10))
+
+# adj_mat = create_adjacency(edges, n1 = 'from', n2='to')
+# 
+# library(igraph)
+# deg = degree(graph.adjacency(adj_mat))
+# deg = data.frame(id = as.integer(names(deg))-1,  # for some reason something is zero
+#                  value=deg)
+# nodes = left_join(nodes, deg) %>% 
+#   mutate(value = ifelse(is.na(value), min(value, na.rm = T), value),
+#          value = value-min(value)+1)
+# 
+# 
+# visNetwork(nodes = nodes, edges=edges)
+```
+
+
+
+For example, most of the R community uses <span class="pack">ggplot2</span> to explore their data visually.  The package comes with <span class="func">geom_smooth</span>, which can actually use <span class="pack">mgcv</span> to display a nonlinear relationship between two variables.  Unfortunately it is only triggered automatically for large samples (> 1000), but you can always use it if desired via the `method` argument. You can even use the various arguments for the smooth term function.
 
 ```{r gam-ggplot}
 ggplot2::ggplot(aes(x, y)) +
@@ -499,10 +545,78 @@ splines_perc = get_perc('splines')
 - <span class="pack">VGAM</span> `r VGAM_perc`%
 - <span class="pack">splines</span>  `r splines_perc`%
 
+### GAM recommended reading
 
-# Survival
+@wood_generalized_2017
 
-<span class="basepack">survival</span>, <span class="pack">rms</span>
+# Survival analysis
+
+<span class="emph">Survival analysis</span> is very common in biostatistics, epidemiology, public health etc.   It is also commonly called <span class="emph">event-history</span> analysis and <span class="emph">failure analysis</span> (engineering).    The basic idea is that you have a time-based target variable and want to model the time it takes until the event of interest occurs.  
+
+
+Given the nature of the data you need two things to specify a target variable, the time counter and the indicator for whether the event of interest happened or not.
+
+```{r survival_demo}
+y = survival::Surv(time = t, event = q)  # standard right censored
+y = Surv(t, t>0, type='left')            # left-censored
+survival::coxph(y ~ x)                   # Cox Proportional Hazards Regression
+cox.zph(model)                           # test proportional hazards assumption
+anova(model)                             # anova summary table
+coxph(y ~ x + strata(group))             # stratified
+coxph(y ~ x + frailty.gaussian(group))   # random effect for group
+coxph(Surv(start, stop, event) ~ x)      # time-dependent model
+survreg(y ~ x, dist="exponential")       # parametric model
+```
+
+
+I've mentioned the <span class="pack">rms</span> package before.  It is written by Frank Harrell, a noted biostatistician who also contributed to SAS back in the day.  The package name is an acronym for the title of his book *Regression Modeling Strategies*, and given his discipline, he devotes a lot of content in the text, and functionality in the package, for survival analysis.  The book is a very good modeling book in general.  
+
+```{r survival_rms}
+y = survival::Surv(time = t, event = status)
+dd = rms::datadist(x, z)             # set data  up for prediction
+options(datadist='dd')
+cph(y ~ x + z)                       # basic cox
+psm(y ~ x + z, dist="weibull")       # parametric survival model
+Mean(model)                          # create a function for further exploration
+Survival(model)                      # create a function for further exploration
+Quantile(model)                      # create a function for further exploration
+ggplot(Predict(model, x, z))         # prediction plot
+survplot(model)                      # survival plot
+nomogram(model)                      # yep, nomogram
+```
+
+Along with the extensions that rms provides, you might also find something of use in packages like <span class="pack">Epi</span>, <span class="pack">epitools</span>, or <span class="pack">epiR</span>.  In addition, while the biostats world seems high on splines for their survival models (see e.g. `?rms::rcs`), and so you can incorporate them easily with the models above, likewise some of the additive models packages like <span class="pack">mgcv</span> have functionality for survival analysis.
+
+```{r survival_gam}
+mgcv::gam(time ~ s(x), weights = status, family = cox.ph)
+```
+
+
+## Survival analysis list of packages
+
+[Survival Task View](https://www.rdocumentation.org/taskviews#Survival)
+
+```{r survival_percs, eval=TRUE, echo=FALSE}
+survival_perc = get_perc('survival')
+rms_perc = get_perc('rms')
+randomForestSRC_perc = get_perc('randomForestSRC')
+Epi_perc = get_perc('Epi')
+epitools_perc = get_perc('epitools')
+epiR_perc = get_perc('epiR')
+```
+
+- <span class="basepack">survival</span> `r survival_perc`%
+- <span class="pack">rms</span> `r rms_perc`%
+- <span class="pack">randomForestSRC</span>  `r randomForestSRC_perc`%
+- <span class="pack">Epi</span>  `r Epi_perc`%
+- <span class="pack">epitools</span>  `r epitools_perc`%
+- <span class="pack">epiR</span>  `r epiR_perc`%
+- <span class="pack">mgcv</span> `r mgcv_perc`%
+
+
+## Survival analysis recommended reading
+
+@harrell2015
 
 # Survey weighting
 
@@ -525,6 +639,8 @@ ltm
 See [SEM][Structural Equation Modeling] section
 
 # Structural Equation Modeling
+
+[Psychometrics Task View](https://www.rdocumentation.org/taskviews#Psychometrics)
 
 lavaan
 
@@ -585,6 +701,9 @@ cluster_perc = get_perc('cluster')
 
 # Time series
 
+[Time Series Task View](https://www.rdocumentation.org/taskviews#TimeSeries)
+
+
 xts, forecast, prophet, lubridate, tseries, arima
 
 
@@ -596,14 +715,21 @@ as.Date()
 ```
 
 # Spatial models
+[Spatial Task View](https://www.rdocumentation.org/taskviews#Spatial)
+[SpatialTemporal Task View](https://www.rdocumentation.org/taskviews#SpatioTemporal)
+
+spatial
 sf
 sp
 spdep
 mgcv
-
+ggmap
+leaflet
+plotly
 
 
 # Machine learning
+
 You can find detailed examples in my document [here](https://m-clark.github.io/introduction-to-machine-learning).
 
 [Machine Learning Task View](https://www.rdocumentation.org/taskviews#MachineLearning)
