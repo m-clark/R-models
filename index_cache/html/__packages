@@ -14,7 +14,7 @@ plotly
 lazerhawk
 viridisLite
 viridis
+visNetwork
 httr
 bindrcpp
 igraph
-visNetwork

@@ -478,7 +478,8 @@ It took a while, but people have finally started to realize the power of mgcv.
 mgcv_depgraph = get_depgraph('mgcv')
 ```
 
-```{r mgcv_graph, echo=F, eval=T, cache=F}
+```{r mgcv_graph, echo=F, eval=T, cache=F, dependson=-1}
+# htmlwidgets fails with second graph. will display mixed model one but not this.
 nodes = mgcv_depgraph$node_df %>% 
   rename(label=name) %>% 
   rownames_to_column(var='id') %>% 
