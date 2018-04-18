@@ -68,7 +68,7 @@ THIS DOCUMENT IS A WORK IN PROGRESS. IT IS CURRENTLY NOT EVEN HALF-WAY THROUGH.
 
 # Introduction
 
-This is a quick reference for the modeling syntax and associated packages.  While it covers a lot of ground, it is not meant to be exhaustive, but rather it provides an easy reference for those new to R, someone trying out an unfamiliar technique, or those just interested in comparison to similar approaches in other environments.  In time, this may be rendered obsolete by the [parsnip package](https://github.com/topepo/parsnip), but until then, this can get you quickly started with many common models.
+This is a quick reference for the modeling syntax and associated packages.  While it covers a lot of ground, it is not meant to be exhaustive, but rather, it provides an easy reference for those new to R, someone trying out an unfamiliar (but otherwise common) technique, or those just interested in comparison to similar approaches in other environments.  In time, this may be rendered obsolete by the [parsnip package](https://github.com/topepo/parsnip), but until then, this can get you quickly started with many common models.
 
 Preference is given to base R functionality or what are perceived as very commonly used packages.  'Very common' is based on my own knowledge consulting across dozens of disciplines along with just regularly following the R community, and things like the rankings at [RDocumentation.org](https://rdocumentation.org), and packages listed in [CRAN Task Views](https://www.rdocumentation.org/taskviews).
 
@@ -76,6 +76,8 @@ Preference is given to base R functionality or what are perceived as very common
 #### Miscellaneous
 
 I will ignore the data argument in every example. It is implied that you would supply it. 
+
+For those who want to get more into the implementation of many of these models, I have raw R code for many (probably most) of the techniques discussed [here](https://github.com/m-clark/Miscellaneous-R-Code).
 
 What this won't provide:
 
@@ -124,7 +126,7 @@ residuals(my_model)  # residuals
 predict(my_model, newdata=other_observations, type='response')  # specific predictions
 ```
 
-Some may also have a <span class="func">plot</span> method, but this will definitely vary by package both in whether it is available and what it will do.  For example, plotting an <span class="objclass">lm</span> object will explore residuals, while plotting a <span class="objclass">gam</span> will show the component plots of the smoothed terms. Some packages, like <span class="pack">visreg</span> and <span class="pack">margins</span>, will help plotting some types of effects.  I've found it easier to do oneself via <span class="pack">ggplot2</span>, rather than hope you can finagle a plot made by a package into something you actually want.
+Some may also have a <span class="func">plot</span> method, but this will definitely vary by package both in whether it is available and what it will do.  For example, plotting an <span class="objclass">lm</span> object will explore residuals, while plotting a <span class="objclass">gam</span> will show the component plots of the smoothed terms. Some packages, like <span class="pack">ggeffects</span>, <span class="pack">visreg</span> and <span class="pack">margins</span>, will help plotting some types of effects.  I've found it easier to do oneself via <span class="pack">ggplot2</span>, rather than hope you can finagle a plot made by a package into something you actually want.
 
 Many packages will also have a <span class="func">confint</span> method for interval estimates of coefficients.  See the <span class="basepack">boot</span> package as a starting point for bootstrapped intervals.
 
@@ -400,7 +402,7 @@ VarCorr(model)     # variance components
 
 ## Related models
 
-You won't find much in the way of so-called <span class="emph">fixed effects models</span> (for panel data) in R, but the <span class="pack">plm</span> package does this .  The <span class="pack">geepack</span> will allow for GEE models to analyse data with various types of covariance structures.  And if all you want to do is correct your standard errors ('cluster-robust'), consider <span class="pack">sandwich</span>.
+You won't find much in the way of so-called <span class="emph">fixed effects models</span> (for panel data) in R, but the <span class="pack">plm</span> package does this .  The <span class="pack">geepack</span> will allow for <span class="emph">GEE</span> models to analyse data with various types of covariance structures.  And if all you want to do is correct your standard errors ('cluster-robust'), consider <span class="pack">sandwich</span>.
 
 ## Still other packages
 
@@ -434,6 +436,10 @@ ordinal_perc = get_perc('ordinal')
 
 @gelman_arm
 
+@wood_generalized_2017
+
+@fahrmeir2013regression
+
 # Additive models
 
 <span class="emph">Generalized additive models</span> incorporate nonlinear, random, and spatial effects all under one roof.  One of the most powerful modeling packages in the R universe, the excellently named Mixed-GAM Computational Vehicle (<span class="pack">mgcv</span>), focuses on these, and even comes with the standard R installation!  
@@ -464,7 +470,7 @@ concurvity(model)   # the GAM form of collinearity
 The package also comes with two means of modeling mixed effect models directly, with <span class="pack">nlme</span> support via the <span class="func">gamm</span> function, and the with <span class="pack">lme4</span> support via the <span class="pack">gamm4</span> package.  With the former one can also get at temporal autocorrelation as well via the `correlation` argument.  There is capability to deal with missing values, multivariate outcomes, and handle large data sets. If you don't use smooth terms, <span class="pack">mgcv</span> can simply be seen as a means to model additional distributional families.  
 
 
-### Extensions and other considerations
+## Extensions and other considerations
 
 It took a while, but people have finally started to realize the power of mgcv.
 
@@ -472,7 +478,7 @@ It took a while, but people have finally started to realize the power of mgcv.
 mgcv_depgraph = get_depgraph('mgcv')
 ```
 
-```{r mgcv_graph, echo=F, eval=T}
+```{r mgcv_graph, echo=F, eval=T, cache=F}
 nodes = mgcv_depgraph$node_df %>% 
   rename(label=name) %>% 
   rownames_to_column(var='id') %>% 
@@ -484,9 +490,9 @@ edges = mgcv_depgraph$edge_df %>%
 edge_trim = edges %>% 
   filter(to == 0)
 visNetwork(nodes = nodes %>% 
-                         filter(id %in% c(0, edge_trim$from)) %>% 
-                         mutate(value=c(100, rep(0, nrow(.)-1))), 
-                       edges=edge_trim) %>% 
+             filter(id %in% c(0, edge_trim$from)) %>% 
+             mutate(value=c(100, rep(0, nrow(.)-1))), 
+           edges=edge_trim) %>% 
   visEdges(color=list(opacity=.10))
 
 # adj_mat = create_adjacency(edges, n1 = 'from', n2='to')
@@ -519,7 +525,7 @@ I'll speak more about the package in the Bayesian section, but you can also use 
 
 At one time both <span class="pack">gamlss</span> and <span class="pack">VGAM</span> extended GAMs beyond what <span class="pack">mgcv</span> could do, and they still have some modeling capabilities not seen in <span class="pack">mgcv</span>, e.g. other distributional families.  However, <span class="pack">mgcv</span> has since made up some of the more important differences.  Also, I still see some using the R-core <span class="func">spline</span> function and <span class="pack">splines</span> package.  There is nothing to be gained there however.  There is also the <span class="pack">gam</span> package, by Trevor Hastie, the person who wrote one of the most widely cited works on the technique.  While it certainly does the job, it's not on the level of <span class="pack">mgcv</span> in terms of what all it can do.  Unfortunately some packages that use GAMs use it instead of <span class="pack">mgcv</span>, so you won't have all the nice functionality.
 
-In my document I quote Shalizi who I think sums up the reason to use GAMs nicely. So I'll do so again here.
+In my document on GAMs I quote Shalizi who I think sums up the reason to use the models nicely. So I'll do so again here.
 
 > With modern computing power, there are very few situations in which it is actually better to do linear regression than to fit an additive model. In fact, there seem to be only two good reasons to prefer linear models.<br> <br>
 Our data analysis is guided by a credible scientific theory which asserts linear relationships among the variables we measure (not others, for which our observables serve as imperfect proxies).<br> <br>
@@ -545,9 +551,11 @@ splines_perc = get_perc('splines')
 - <span class="pack">VGAM</span> `r VGAM_perc`%
 - <span class="pack">splines</span>  `r splines_perc`%
 
-### GAM recommended reading
+## GAM recommended reading
 
 @wood_generalized_2017
+
+@fahrmeir2013regression
 
 # Survival analysis
 
@@ -742,34 +750,7 @@ For measurement in general, consider psychometrician and <span class="pack">psyc
 
 More to follow in the [SEM][Structural Equation Modeling] section.
 
-# Structural Equation Modeling
 
-[Psychometrics Task View](https://www.rdocumentation.org/taskviews#Psychometrics)
-
-lavaan
-
-## Path Analysis
-## Confirmatory Factor Analysis
-## SEM
-
-psych
-lavaan
-lava
-mediation
-MplusAutomation
-
-# Graphical models
-
-[Graphical Model Task View](https://www.rdocumentation.org/taskviews#gR)
-
-ggm
-bnlearn
-network sna 
-
-igraph
-networkd3
-visnetwork
-Diagrammer
 
 # Mixture models and cluster analysis
 
@@ -800,6 +781,39 @@ cluster_perc = get_perc('cluster')
 - <span class="pack">polca</span> `r polca_perc`%
 - <span class="pack">clusterSim</span> `r clusterSim_perc`%
 - <span class="basepack">cluster</span> `r cluster_perc`%
+
+
+
+
+# Structural Equation Modeling
+
+[Psychometrics Task View](https://www.rdocumentation.org/taskviews#Psychometrics)
+
+lavaan
+
+## Path Analysis
+## Confirmatory Factor Analysis
+## SEM
+
+psych
+lavaan
+lava
+mediation
+MplusAutomation
+
+# Graphical models
+
+[Graphical Model Task View](https://www.rdocumentation.org/taskviews#gR)
+
+ggm
+bnlearn
+network sna 
+
+igraph
+networkd3
+visnetwork
+Diagrammer
+
 
 
 
@@ -896,11 +910,11 @@ vegan
 
 ## Financial
 
-# Modeling frameworks
+# Modeling frameworks and helpers
 
-Probably not enough to do much here.
+Probably not enough to (consistently) do much here.
 
-caret zelig recipes tm?
+caret zelig recipes tm? sjstats car
 
 
 # References
