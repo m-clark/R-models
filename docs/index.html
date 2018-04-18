@@ -260,7 +260,7 @@ div.tocify {
 <p>Preference is given to base R functionality or what are perceived as very commonly used packages. ‘Very common’ is based on my own knowledge consulting across dozens of disciplines along with just regularly following the R community, and things like the rankings at <a href="https://rdocumentation.org">RDocumentation.org</a>, and packages listed in <a href="https://www.rdocumentation.org/taskviews">CRAN Task Views</a>.</p>
 <div id="miscellaneous" class="section level4">
 <h4>Miscellaneous</h4>
-<p>I will ignore the data argument in every example.</p>
+<p>I will ignore the data argument in every example. It is implied that you would supply it.</p>
 <p>What this won’t provide:</p>
 <ul>
 <li>data processing required</li>
@@ -277,7 +277,7 @@ div.tocify {
 <li><span class="func">function</span></li>
 <li><span class="objclass">object/class</span></li>
 </ul>
-<p>When you see <code>pack::func</code> the first value is the package name and the second the function. I show this for the first time, but otherwise it is assumed you’ve loaded the necessary package.</p>
+<p>When you see <code>pack::func</code> the first value is the package name and the second the function. I show this for the first time to make clear what package is used, but otherwise it is assumed you’ve loaded the necessary package (<code>library(mypackage)</code>).</p>
 </div>
 </div>
 <div id="basics" class="section level1">
@@ -554,6 +554,7 @@ dd =<span class="st"> </span>rms<span class="op">::</span><span class="kw">datad
 <span class="kw">nomogram</span>(model)                      <span class="co"># yep, nomogram</span></code></pre></div>
 <p>Along with the extensions that rms provides, you might also find something of use in packages like <span class="pack">Epi</span>, <span class="pack">epitools</span>, or <span class="pack">epiR</span>. In addition, while the biostats world seems high on splines for their survival models (see e.g. <code>?rms::rcs</code>), and so you can incorporate them easily with the models above, likewise some of the additive models packages like <span class="pack">mgcv</span> have functionality for survival analysis.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mgcv<span class="op">::</span><span class="kw">gam</span>(time <span class="op">~</span><span class="st"> </span><span class="kw">s</span>(x), <span class="dt">weights =</span> status, <span class="dt">family =</span> cox.ph)</code></pre></div>
+<p>And finally, you can find survival models in the machine learning context, e.g. with a package like <span class="pack">randomForestSRC</span>.</p>
 <div id="survival-analysis-list-of-packages" class="section level2">
 <h2>Survival analysis list of packages</h2>
 <p><a href="https://www.rdocumentation.org/taskviews#Survival">Survival Task View</a></p>
@@ -574,16 +575,85 @@ dd =<span class="st"> </span>rms<span class="op">::</span><span class="kw">datad
 </div>
 <div id="survey-weighting" class="section level1">
 <h1>Survey weighting</h1>
-<p>Don’t use the weights argument in lm/glm. survey</p>
+<p>Many data sets in the social sciences are the result of a <span class="emph">survey design</span>, where certain geographic regions and populations are sampled in precise ways. With the survey weights, one can make more appropriate inferences to the population from which the data was drawn.</p>
+<p>I don’t have a lot of experience here, but can at least show a demo and provide some resources. The first issue is setting up the survey design. Your data will presumably have the weights and other necessary information (e.g. the finite population correction).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># no clusters, stratified, with finite populaton correction</span>
+dstrat =<span class="st"> </span>survey<span class="op">::</span><span class="kw">svydesign</span>(<span class="dt">id=</span><span class="op">~</span><span class="dv">1</span>, <span class="dt">strata=</span><span class="op">~</span>stype, <span class="dt">weights=</span><span class="op">~</span>pw, <span class="dt">fpc=</span><span class="op">~</span>fpc)
+
+dclus =<span class="st"> </span><span class="kw">svydesign</span>(<span class="dt">id=</span><span class="op">~</span>clus, <span class="dt">weights=</span><span class="op">~</span>pw)       <span class="co"># clustered design</span>
+
+<span class="kw">svymean</span>(<span class="op">~</span>y, dclus, <span class="dt">deff=</span><span class="ot">TRUE</span>)                  <span class="co"># survey weighted mean</span>
+<span class="kw">svytotal</span>(<span class="op">~</span>z, dclus, <span class="dt">deff=</span><span class="ot">TRUE</span>)                 <span class="co"># survey weighted total</span>
+<span class="kw">svyratio</span>(<span class="dt">numerator =</span> <span class="op">~</span>y, <span class="dt">denominator=</span> <span class="op">~</span>z, dclus, <span class="dt">deff=</span><span class="ot">TRUE</span>)    <span class="co"># survey weighted ratio</span>
+<span class="kw">svyglm</span>(y <span class="op">~</span><span class="st"> </span>x, <span class="dt">data=</span>dstrat, <span class="dt">family=</span><span class="st">'binomial'</span>)  <span class="co"># standard glm</span></code></pre></div>
+<p>There are also some other models like survival models, factor analysis, and more. One thing I can also mention- don’t use the <code>weights</code> argument in the base R <span class="func">lm/glm</span> functions with survey weights. That argument refers to a different type of weight (inverse variance).</p>
+<div id="survey-analysis-list-of-packages" class="section level2">
+<h2>Survey analysis list of packages</h2>
+<ul>
+<li><span class="pack">survey</span> 98%</li>
+</ul>
 </div>
-<div id="principal-components" class="section level1">
-<h1>Principal components</h1>
-<p>princomp, svd principal pcaMethods</p>
+<div id="survey-analysis-recommended-reading" class="section level2">
+<h2>Survey analysis recommended reading</h2>
+<p><span class="citation">Lumley (<a href="#ref-lumley2011complex">2011</a>)</span></p>
 </div>
-<div id="factor-analysis" class="section level1">
-<h1>Factor analysis</h1>
-<p>factanal fa ltm</p>
-<p>See <a href="#structural-equation-modeling">SEM</a> section</p>
+</div>
+<div id="principal-components-factor-analysis" class="section level1">
+<h1>Principal components &amp; Factor analysis</h1>
+<p>A lot of techniques fall under the heading of ‘dimension reduction’, ‘factor analysis’, or ‘matrix factorization’ techniques.</p>
+<div id="pca" class="section level2">
+<h2>PCA</h2>
+<p>Principal components analysis is one of the most widely used dimension reduction techniques, and brings us to the first example of unsupervised methods. In this case, we don’t have a single target variable to predict, but several, and generally we are not modeling them with other covariates, but trying to reduce them. The basic idea of PCA is to reduce the data to fewer dimensions that nevertheless retain the most variance seen in the data.</p>
+<p>Base R has <span class="func">princomp</span> and <span class="func">prcomp</span> functions, but they merely get the job done. There are plenty of extensions of PCA to supervised settings, but you can do that exploration on your own.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">X =<span class="st"> </span><span class="kw">scale</span>(X)          <span class="co"># standardize the data</span>
+<span class="kw">princomp</span>(X)           <span class="co"># via eigen decomposition</span>
+<span class="kw">prcomp</span>(X)             <span class="co"># via singular value decomposition</span></code></pre></div>
+<p>Beyond that you’ll have some methods like <span class="func">loadings</span>, and these will often work in other packages as well. The most common things you’ll want are scores and loadings.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">X<span class="op">$</span><span class="kw">scores</span>(X)           <span class="co"># component scores</span>
+X<span class="op">$</span><span class="kw">loadings</span>(X)         <span class="co"># loadings/weights</span>
+<span class="kw">loadings</span>(X)</code></pre></div>
+<p>Note that this recommendation comes from someone who has little use for PCA (but very often does factor analysis), I can recommend a couple other packages. The <span class="pack">psych</span> package puts PCA more squarely in the framework of factor analysis more generally, and offers rotations, other measures of fit, etc. The <span class="pack">pcaMethods</span> package provides probabilistic PCA, Bayesian PCA, cross-validation, selection of the number of components, PCA-based imputation, and more.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model =<span class="st"> </span>psych<span class="op">::</span><span class="kw">principal</span>(X, <span class="dt">nfactors =</span> <span class="dv">2</span>, <span class="dt">rotate=</span><span class="st">'varimax'</span>)
+model<span class="op">$</span>loadings
+model<span class="op">$</span>scores
+
+model =<span class="st"> </span>pcaMethods<span class="op">::</span><span class="kw">ppca</span>(X, <span class="dt">nPcs =</span> <span class="dv">2</span>)      <span class="co"># probabilistic PCA</span>
+<span class="kw">loadings</span>(model)
+<span class="kw">scores</span>(model)</code></pre></div>
+<p>There are plenty of supervised extensions to PCA, but generally you’ll have better choices. For example, instead of PC regression, use techniques that won’t require the dimension reduction, would better to such a process without being as restrictive (like a neural network), or would better suit the goals of some analyses (e.g. when variables belong to the same scale).</p>
+</div>
+<div id="factor-analysis" class="section level2">
+<h2>Factor analysis</h2>
+<p>The base R approach to the most common form of factor analysis is pretty much identical to PCA.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model =<span class="st"> </span><span class="kw">factanal</span>(X, <span class="dt">factors =</span> <span class="dv">2</span>, <span class="dt">scores =</span> <span class="st">'regression'</span>, <span class="dt">rotation =</span> <span class="st">'promax'</span>)
+model<span class="op">$</span>loadings
+model<span class="op">$</span>scores</code></pre></div>
+<p>The <span class="pack">psych</span> package offers far, far, more in this realm. The output alone will take a bit for you to get through.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model =<span class="st"> </span>psych<span class="op">::</span><span class="kw">fa</span>(X, <span class="dt">nfactors =</span> <span class="dv">2</span>, <span class="dt">rotate =</span> <span class="st">'oblimin'</span>, <span class="dt">fm =</span> <span class="st">'ml'</span>)  <span class="co"># via maximum likelihood</span>
+model<span class="op">$</span>loadings
+model<span class="op">$</span>scores
+<span class="kw">fa.diagram</span>(model)                     <span class="co"># visualize</span>
+<span class="kw">predict</span>(model, <span class="dt">newdata=</span>mynewdata)     <span class="co"># estimate scores for new data</span>
+<span class="kw">nfactors</span>(X, <span class="dv">4</span>, <span class="dt">rotate=</span><span class="st">'promax'</span>)       <span class="co"># compare solutions for 1:4 factors</span></code></pre></div>
+<p>Once you get into latent variable models like factor analysis, you’ll have plenty of tools at your disposal. Check out <span class="pack">lavaan</span> (confirmatory factor analysis/SEM) and <span class="pack">ltm</span> (item response theory models) for starters.</p>
+</div>
+<div id="pcafa-list-of-packages" class="section level2">
+<h2>PCA/FA list of packages</h2>
+<p><a href="https://www.rdocumentation.org/taskviews#Psychometrics">Psychometrics Task View</a></p>
+<ul>
+<li><span class="pack">psych</span> 99%</li>
+<li><span class="pack">pcaMethods</span> (not accurately tracked since on BioConductor)</li>
+<li><span class="pack">lavaan</span> 96%</li>
+<li><span class="pack">ltm</span> 91%</li>
+</ul>
+</div>
+<div id="pcafa-recommended-reading" class="section level2">
+<h2>PCA/FA recommended reading</h2>
+<p>I have some more on many dimension reduction techniques <a href="https://m-clark.github.io/sem/FA_notes.html">here</a>, which briefly covers/demos a wide variety of techniques like t-sne, non-negative matrix factorization, latent Dirichlet allocation, mixture models, recommender systems and more. It spends more time on PCA and FA.</p>
+<p>I also cover PCA/FA <a href="https://m-clark.github.io/sem/">here</a>, along with SEM, mixture models, IRT models and more.</p>
+<p>For measurement in general, consider psychometrician and <span class="pack">psych</span> package author <a href="http://www.personality-project.org/r/book/">William Revelle’s freely available text</a>. You will also learn a ridiculous amount by simply reading the help files to the various functions in his package.</p>
+<p>More to follow in the <a href="#structural-equation-modeling">SEM</a> section.</p>
+</div>
 </div>
 <div id="structural-equation-modeling" class="section level1">
 <h1>Structural Equation Modeling</h1>
@@ -659,15 +729,33 @@ posix
 <p>tidytext text2vec stringdist</p>
 <p>tm lda topicmodels keras</p>
 </div>
-<div id="ecological" class="section level1">
-<h1>Ecological</h1>
+<div id="discipline-specific" class="section level1">
+<h1>Discipline specific</h1>
+<p>Probably should avoid</p>
+<div id="ecological" class="section level2">
+<h2>Ecological</h2>
 <p><a href="https://www.rdocumentation.org/taskviews#Environmetrics">Task View</a> vegan</p>
+</div>
+<div id="financial" class="section level2">
+<h2>Financial</h2>
+</div>
+</div>
+<div id="modeling-frameworks" class="section level1">
+<h1>Modeling frameworks</h1>
+<p>Probably not enough to do much here.</p>
+<p>caret zelig recipes tm?</p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
 <div id="refs" class="references">
 <div id="ref-gelman_arm">
 <p>Gelman, Andrew, and Jennifer Hill. 2006. <em>Data Analysis Using Regression and Multilevel/Hierarchical Models</em>. Cambridge University Press.</p>
 </div>
 <div id="ref-harrell2015">
 <p>Harrell, Frank E. 2015. <em>Regression Modeling Strategies</em>. 2nd ed. Springer.</p>
+</div>
+<div id="ref-lumley2011complex">
+<p>Lumley, Thomas. 2011. <em>Complex Surveys: A Guide to Analysis Using R</em>. Vol. 565. John Wiley &amp; Sons.</p>
 </div>
 <div id="ref-wood_generalized_2017">
 <p>Wood, Simon N. 2017. <em>Generalized Additive Models: An Introduction with R</em>. 2nd ed. CRC press.</p>

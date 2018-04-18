@@ -621,7 +621,7 @@ epiR_perc = get_perc('epiR')
 
 # Survey weighting
 
-Many data sets in the social sciences are the result of a <span class="emph">survey design</span>, where certain geographic regions and populations are sampled in precise ways.  With the survery weights, one can make more appropriate inferences to the population from which the data was drawn.
+Many data sets in the social sciences are the result of a <span class="emph">survey design</span>, where certain geographic regions and populations are sampled in precise ways.  With the survey weights, one can make more appropriate inferences to the population from which the data was drawn.
 
 I don't have a lot of experience here, but can at least show a demo and provide some resources.  The first issue is setting up the survey design.  Your data will presumably have the weights and other necessary information (e.g. the finite population correction).
 
@@ -652,20 +652,95 @@ survey_perc = get_perc('survey')
 
 @lumley2011complex
 
-# Principal components
+# Principal components & Factor analysis
 
-princomp, svd
-principal
-pcaMethods
-
-# Factor analysis
-
-factanal
-fa
-ltm
+A lot of techniques fall under the heading of 'dimension reduction', 'factor analysis', or 'matrix factorization' techniques.  
 
 
-See [SEM][Structural Equation Modeling] section
+## PCA
+
+Principal components analysis is one of the most widely used dimension reduction techniques, and brings us to the first example of unsupervised methods.  In this case, we don't have a single target variable to predict, but several, and generally we are not modeling them with other covariates, but trying to reduce them.  The basic idea of PCA is to reduce the data to fewer dimensions that nevertheless retain the most variance seen in the data.
+
+Base R has <span class="func">princomp</span> and <span class="func">prcomp</span> functions, but they merely get the job done.  There are plenty of extensions of PCA to supervised settings, but you can do that exploration on your own.  
+
+```{r pca_demo}
+X = scale(X)          # standardize the data
+princomp(X)           # via eigen decomposition
+prcomp(X)             # via singular value decomposition
+```
+
+Beyond that you'll have some methods like <span class="func">loadings</span>, and these will often work in other packages as well.  The most common things you'll want are scores and loadings.
+
+```{r pca_methods}
+X$scores(X)           # component scores
+X$loadings(X)         # loadings/weights
+loadings(X)
+```
+
+Note that this recommendation comes from someone who has little use for PCA (but very often does factor analysis), I can recommend a couple other packages.  The <span class="pack">psych</span> package puts PCA more squarely in the framework of factor analysis more generally, and offers rotations, other measures of fit, etc.  The <span class="pack">pcaMethods</span> package provides probabilistic PCA, Bayesian PCA, cross-validation,  selection of the number of components, PCA-based imputation, and more.
+
+```{r pca_extend}
+model = psych::principal(X, nfactors = 2, rotate='varimax')
+model$loadings
+model$scores
+
+model = pcaMethods::ppca(X, nPcs = 2)      # probabilistic PCA
+loadings(model)
+scores(model)
+```
+
+There are plenty of supervised extensions to PCA, but generally you'll have better choices.  For example, instead of PC regression, use techniques that won't require the dimension reduction, would better to such a process without being as restrictive (like a neural network), or would better suit the goals of some analyses (e.g. when variables belong to the same scale).
+
+## Factor analysis
+
+The base R approach to the most common form of factor analysis is pretty much identical to PCA.  
+
+```{r fa_demo}
+model = factanal(X, factors = 2, scores = 'regression', rotation = 'promax')
+model$loadings
+model$scores
+```
+
+
+The <span class="pack">psych</span> package offers far, far, more in this realm.  The output alone will take a bit for you to get through.
+
+```{r fa_psych}
+model = psych::fa(X, nfactors = 2, rotate = 'oblimin', fm = 'ml')  # via maximum likelihood
+model$loadings
+model$scores
+fa.diagram(model)                     # visualize
+predict(model, newdata=mynewdata)     # estimate scores for new data
+nfactors(X, 4, rotate='promax')       # compare solutions for 1:4 factors
+```
+
+Once you get into latent variable models like factor analysis, you'll have plenty of tools at your disposal.  Check out <span class="pack">lavaan</span> (confirmatory factor analysis/SEM) and <span class="pack">ltm</span> (item response theory models) for starters.
+
+## PCA/FA list of packages
+
+[Psychometrics Task View](https://www.rdocumentation.org/taskviews#Psychometrics)
+
+```{r pcafa_percs, eval=TRUE, echo=FALSE}
+psych_perc = get_perc('psych')
+pcaMethods_perc = get_perc('pcaMethods')
+lavaan_perc = get_perc('lavaan')
+ltm_perc = get_perc('ltm')
+```
+
+- <span class="pack">psych</span> `r psych_perc`%
+- <span class="pack">pcaMethods</span> (not accurately tracked since on BioConductor)
+- <span class="pack">lavaan</span> `r lavaan_perc`%
+- <span class="pack">ltm</span> `r ltm_perc`%
+
+
+## PCA/FA recommended reading
+
+I have some more on many dimension reduction techniques [here](https://m-clark.github.io/sem/FA_notes.html), which briefly covers/demos a wide variety of techniques like t-sne, non-negative matrix factorization, latent Dirichlet allocation, mixture models, recommender systems and more.  It spends more time on PCA and FA.
+
+I also cover PCA/FA [here](https://m-clark.github.io/sem/), along with SEM, mixture models, IRT models and more.
+
+For measurement in general, consider psychometrician and <span class="pack">psych</span> package author [William Revelle's freely available text](http://www.personality-project.org/r/book/).  You will also learn a ridiculous amount by simply reading the help files to the various functions in his package.
+
+More to follow in the [SEM][Structural Equation Modeling] section.
 
 # Structural Equation Modeling
 
@@ -810,9 +885,22 @@ lda
 topicmodels
 keras
 
-# Ecological
+
+# Discipline specific
+
+Probably should avoid
+
+## Ecological
 [Task View](https://www.rdocumentation.org/taskviews#Environmetrics)
 vegan
+
+## Financial
+
+# Modeling frameworks
+
+Probably not enough to do much here.
+
+caret zelig recipes tm?
 
 
 # References
