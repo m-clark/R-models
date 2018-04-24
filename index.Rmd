@@ -23,7 +23,7 @@ biblio-style: apalike
 link-citations: yes
 output_dir: "docs"
 description: ""    
-font-import: https://fonts.googleapis.com/css?family=Roboto|Roboto+Mono|Open+Sans|Alex+Brush|Stalemate
+font-import: https://fonts.googleapis.com/css?family=Roboto|Roboto+Mono|Open+Sans|Alex+Brush|Questrial|Stalemate
 cover-image: img/nineteeneightyR.png
 url: 'https\://m-clark.github.io/' 
 favicon: 'img/R.ico'
@@ -82,6 +82,7 @@ For those who want to get more into the implementation of many of these models, 
 What this won't provide:
 
 - data processing required
+- a detailed explanation of the model and why you'd use it
 - visualization
 - a list of every package that *might* be useful
 
@@ -755,16 +756,76 @@ More to follow in the [SEM][Structural Equation Modeling] section.
 
 # Mixture models and cluster analysis
 
-<span class="pack">Mclust</span>
-<span class="pack">flexmix</span>
-<span class="pack">hmm</span>
-<span class="pack">polca</span>
-<span class="pack">clusterSim</span>
+Often the goal is to find latent structure among the observations (rows), as opposed to the variables (columns).  As such we have another unsupervised modeling situation that is very commonly used- cluster analysis.  
 
-<span class="basepack">cluster</span>
-<span class="basepack">kmeans</span>
-<span class="basepack">hclust</span>
-<span class="basepack">dist</span>
+## Mixture models
+
+We'll start with model-based approaches to the problem, typically referred to as <span class="emph">mixture models</span>. A good starting point here is <span class="pack">mclust</span>.  It provides a very easy way to search across a wide variety of cluster types, as well as any number of clusters (including 1 cluster).  You may then select the 'best' solution based on BIC, with is the advantage of a model-based approach.  Furthermore, it provides plots of the search space, the classifications, uncertainty and density plots.
+
+```{r cluster_mclus}
+model = mclust::Mclust(X, G = 1:4)
+summary(model)
+plot(model)
+```
+
+Often people want to do a cluster analysis and then use those clusters in a subsequent analysis, e.g. as a predictor.  This two-stage approach fails to take into account the uncertainty in the class assignment.  However, the mixture model approach can do this appropriately, and we have another long-standing R package to help us there- <span class="pack">flexmix</span>.  This package can actually handle a wide variety of regression models (e.g. different response distributions, mixed models[^lgc]), allowing the results to vary across the latent clusters.  It uses S4 class objects.
+
+```{r cluster_flexmix}
+model = flexmix::flexmix(yn ~ x, k = 2)  # two clusters
+summary(model)                    # basic info
+parameters(model)                 # coefficients (for each cluster/class)
+posterior(model)                  # probability of class membership
+
+# two outcomes, two models, two classes
+model = flexmix(yn ~ x, k = 2,
+                model = list(FLXMRglm(yn ~ x + z), 
+                             FLXMRglm(yp ~ x + offset(q), family = 'poisson')))
+```
+
+
+Another type of model, or at least term, you may here with regard to mixture models is <span class="emph">latent class analysis</span>.  The only distinction here is that the data is categorical.  The <span class="pack">poLCA</span> package focuses on this.  It also will allow for modeling the latent classes as an outcome (in distinction to <span class="pack">flexmix</span>), just as you would in standard logistic regression settings.
+
+```{r cluster_polca}
+# assume X is a matrix of binary indicator variables
+model = poLCA::poLCA(X ~ 1, values, nclass = 2)      # basic cluster analysis
+model = poLCA(X ~ x + z, values, nclass = 2)         # add predictors
+poLCA.posterior(model)                               # probability of class membership
+```
+
+While it does about as much as many would want, unfortunately <span class="pack">poLCA</span> is pretty bare bones. Look for <span class="pack">lavaan</span> to add latent classes in the future.
+
+When it comes to modeling with latent clusters, there's a lot of ways to do so.  A very common approach that one sees in other modeling frameworks is hidden Markov models.  Consider the <span class="pack">hmm</span> package as a starting point, but there's a lot out there.
+
+## Traditional cluster analysis
+
+For traditional cluster analysis based on distance matrices, one doesn't really need to go beyond the base R installation, as it comes with <span class="func">dist</span>, <span class="func">kmeans</span>, <span class="pack">hclust</span> functions, and the <span class="func">recommended</span> package cluster.
+
+```{r cluster_traditional}
+X_dist = dist(X)                          # euclidean distances
+X_dist = dist(X, method = 'manhattan')    # manhattan distance
+
+kmeans(X_dist, 3)                         # k-means 3 cluster solution
+
+hclust(X_dist, method = 'average')        # hierarchical clustering with average linkage
+cluster::agnes(X_dist)                    # agglomerative clustering
+cluster::diana(X_dist)                    # divisive clustering
+```
+
+Unfortunately such methods come with many arbitrary choices- distance metric, linkage method, number of clusters, clustering method, 'performance', etc.  I'd suggest something like <span class="pack">clusterSim</span> to make it easy to search through the minimally dozens of options you might consider.  For example, the following would search over several clustering approaches, evaluating them across different cluster numbers, cluster quality assessments, distance metrics, normalization techniques and so forth.
+
+```{r cluster_sim}
+clusterSim::cluster.Sim(X, 
+                        p = 1,
+                        minClusterNo = 2,
+                        maxClusterNo = 5,
+                        icq = c('G1', 'S'),
+                        distances = c('d2', 'd5'),
+                        normalizations = c('n1', 'n3'),
+                        methods = c('m5', 'm3', 'm1'))
+```
+
+
+## Cluster analysis list of packages
 
 ```{r cluster_percs, eval=TRUE, echo=FALSE}
 Mclust_perc = get_perc('Mclust')
@@ -776,7 +837,7 @@ cluster_perc = get_perc('cluster')
 ```
 
 
-- <span class="pack">Mclust</span> `r Mclust_perc`%
+- <span class="pack">mclust</span> `r Mclust_perc`%
 - <span class="pack">flexmix</span> `r flexmix_perc`%
 - <span class="pack">hmm</span> `r hmm_perc`%
 - <span class="pack">polca</span> `r polca_perc`%
@@ -921,3 +982,5 @@ caret zelig recipes tm? sjstats car
 # References
 
 [^jagam]: There is the <span class="func">jagam</span> function in <span class="pack">mgcv</span> to use JAGS, but I can't think of a reason to use it over <span class="pack">brms</span>.
+
+[^lgc]: Using a mixed model on longitudinal data with <span class="pack">flexmix</span> negates the need to use SEM for what are sometimes called <span class="emph">Latent Class Growth Curve Models</span>, <span class="emph">Growth Mixture Models</span> or <span class="emph">Latent Trajectory Models</span>.  If you need indirect effects, you'll have to use Mplus or similar, and good luck with that.
