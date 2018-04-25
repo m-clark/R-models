@@ -349,7 +349,7 @@ Again though, you shouldn't label your data such that the same label can refer t
 
 ### lme4 extensions
 
-The following is a graph of packages that have a connection to lme4 directly (thick lines) or indirectly, and gives a sense that you'll have a lot to work with should you use this package.  Zoom in to see package names
+The following is a graph of packages that have a connection to lme4 directly (thick lines) or indirectly, and gives a sense that you'll have a lot to work with should you use this package.  Zoom in to see package names.
 
 ```{r lme4_getgraph, eval=TRUE, echo=FALSE}
 lme4_depgraph = get_depgraph('lme4')
@@ -479,7 +479,7 @@ It took a while, but people have finally started to realize the power of mgcv.
 mgcv_depgraph = get_depgraph('mgcv')
 ```
 
-```{r mgcv_graph, echo=F, eval=T, cache=F, dependson=-1}
+```{r mgcv_graph, echo=F, eval=T}
 # htmlwidgets fails with second graph. will display mixed model one but not this.
 nodes = mgcv_depgraph$node_df %>% 
   rename(label=name) %>% 
@@ -756,7 +756,7 @@ More to follow in the [SEM][Structural Equation Modeling] section.
 
 # Mixture models and cluster analysis
 
-Often the goal is to find latent structure among the observations (rows), as opposed to the variables (columns).  As such we have another unsupervised modeling situation that is very commonly used- cluster analysis.  
+Often the goal is to find latent structure (or simply dimension reduction) among the observations (rows), as opposed to the variables (columns).  As such we have another unsupervised modeling situation that is very commonly used- cluster analysis.  
 
 ## Mixture models
 
@@ -844,24 +844,151 @@ cluster_perc = get_perc('cluster')
 - <span class="pack">clusterSim</span> `r clusterSim_perc`%
 - <span class="basepack">cluster</span> `r cluster_perc`%
 
+## Cluster analysis recommended reading
+
+[Cluster Analysis Task View](https://www.rdocumentation.org/taskviews#Cluster)
+
+@everitt2011cluster Provides an overview of traditional methods in a clean manner.  Can't speak much to more modern references.
+
+I have a bit on mixture models and latent class analysis from the SEM perspective [here](https://m-clark.github.io/sem/mixture-models).
+
 
 
 
 # Structural Equation Modeling
 
-[Psychometrics Task View](https://www.rdocumentation.org/taskviews#Psychometrics)
+<span class="emph">Structural Equation Modeling</span> (SEM) is a very broad technique that encompasses and extends many others. In particular it combines measurement models regarding latent variables and observed variables, and structural models to explore the effects of latent and observed variables on others.
 
-lavaan
+Due to the use of latent variables and other specifics, a special syntax is required to run SEM models, but otherwise it does not require much to get going, at least with the <span class="pack">lavaan</span> package.  For those familiar with Mplus, it and various extensions can do about 90% of what Mplus does[^lavlack], and even spits out results in the same format.
 
 ## Path Analysis
+
+We can start with a <span class="emph">path analysis</span> using only observed variables.  If you know how to run a regression, you can do this easily.
+
+```{r path_lavaan}
+model = "
+  y ~ x + q + r + z
+  z ~ x + q
+"
+
+result = sem(model)
+summary(result, standardized=TRUE)  # result with standardized effects
+```
+
 ## Confirmatory Factor Analysis
+
+<span class="emph">Confirmatory factor analysis</span> is just like any other factor analysis, except some loadings are constrained to be zero, usually for theoretical and other not so good reasons.
+
+```{r cfa_lavaan}
+model = "
+  lv1 =~ x1 + x2 + x3
+  lv2 =~ y1 + y2 + y3
+
+  y1 ~~ x1     # residual correlation to be estimated
+"
+
+result = cfa(model)
+lavPredict(result)   # get factor scores
+```
+
 ## SEM
 
-psych
-lavaan
-lava
-mediation
-MplusAutomation
+SEM allows us to measure multiple outcomes, indirect effects, and combine latent and observed variables, all at once.
+
+```{r sem_lavaan}
+model = "
+  lv1 =~ x1 + x2 + x3
+  lv2 =~ y1 + y2
+  lv3 =~ z1 + z2 + z3
+  
+  # a mediation model with lv2 as mediator
+  lv3 ~ lv1 + lv2 + q + f    # q and f are observed
+  lv2 ~ lv1 + q
+"
+
+# sem with an approach to deal with missing values, robust ML, additional fit measures
+sem(model, missing='fiml', estimator='MLR', fit.measures=TRUE)  
+```
+
+### lavaan extensions
+
+Several packages extend the capabilities of <span class="pack">lavaan</span>. 
+
+```{r lavaan_getgraph, eval=TRUE, echo=FALSE}
+lavaan_depgraph = get_depgraph('lavaan')
+```
+
+```{r lavaan_graph, echo=F, eval=T}
+nodes = lavaan_depgraph$node_df %>% 
+  rename(label=name) %>% 
+  rownames_to_column(var='id') %>% 
+  mutate(id=as.integer(id)-1)
+edges = lavaan_depgraph$edge_df %>% 
+  rename(from=source,
+         to=target)
+
+edge_trim = edges %>% 
+  filter(to == 0)
+visNetwork(nodes = nodes %>% 
+             filter(id %in% c(0, edge_trim$from)) %>% 
+             mutate(value=c(100, rep(0, nrow(.)-1))), 
+           edges=edge_trim) %>% 
+  visEdges(color=list(opacity=.10))
+```
+
+In terms of Mplus style extensions, note <span class="pack">lavaan.survey</span> (survey design), <span class="pack">blavaan</span> (Bayesian), and <span class="pack">semTools</span>, which adds things like multiple imputation, measurement invariance testing, additional fit indices and a lot more.
+
+A couple others I will note but with which I haven't used yet.  I note them because I will at some point, and their intentions are in the right place. One is <span class="pack">regsem</span>.  The vast majority of SEM models are grossly overfit, estimating dozens of parameters with only a couple hundred observations.  Such a package can surely assist with this problem, though I predict many will not like what they find (even though it will be a better result).  In addition, while writing this I came across the <span class="pack">lavaanPlot</span> package, which might save me at least 50% of the headache of using <span class="pack">Diagrammer</span>.
+
+
+### Beyond lavaan
+
+Going beyond lavaan, I would suggest looking into the <span class="pack">mediation</span> package if you only have observed variables, as it can handle a wide variety of models for the mediator and outcome.  In a similar vein check out <span class="pack">piecewiseSEM</span>. <span class="pack">MplusAutomation</span> will save you from having to use Mplus even if you want to use it.  With one template you can write the syntax files, run the models, and bring back the results into R in a usable form, and all automatically, without ever opening Mplus.
+
+Others that might be of note but I can't speak to include <span class="pack">lava</span> and <span class="pack">OpenMx</span>.  In addition, the aforementioned <span class="pack">psych</span> package has some SEM/lavaan capabilities.
+
+
+## SEM analysis list of packages
+
+```{r sem_percs, eval=TRUE, echo=FALSE}
+lavaan_perc = get_perc('lavaan')
+lavaan_survey_perc = get_perc('lavaan_survey')
+blavaan_perc = get_perc('blavaan')
+lavaanPlot_perc = get_perc('lavaanPlot')
+semTools_perc = get_perc('semTools')
+regsem_perc = get_perc('regsem')
+mediation_perc = get_perc('mediation')
+piecwiseSEM_perc = get_perc('piecwiseSEM')
+MplusAutomation_perc = get_perc('MplusAutomation')
+lava_perc = get_perc('lava')
+OpenMx_perc = get_perc('OpenMx')
+psych_perc = get_perc('psych')
+```
+
+
+- <span class="pack">lavaan</span> `r lavaan_perc`%
+- <span class="pack">lavaan.survey</span> `r lavaan_survey_perc`%
+- <span class="basepack">blavaan</span> `r blavaan_perc`%
+- <span class="basepack">lavaanPlot</span> `r lavaanPlot_perc`%
+- <span class="basepack">semTools</span> `r semTools_perc`%
+- <span class="basepack">regsem</span> `r regsem_perc`%
+- <span class="basepack">mediation</span> `r mediation_perc`%
+- <span class="basepack">piecwiseSEM</span> `r piecwiseSEM_perc`%
+- <span class="basepack">MplusAutomation</span> `r MplusAutomation_perc`%
+- <span class="basepack">lava</span> `r lava_perc`%
+- <span class="basepack">OpenMx</span> `r OpenMx_perc`%
+- <span class="basepack">psych</span> `r psych_perc`%
+
+
+## SEM recommended reading
+
+[Psychometrics Task View](https://www.rdocumentation.org/taskviews#Psychometrics)
+
+My doc on SEM covers a lot of ground and provides more extensive examples.
+
+@kline2015principles is a very popular applied treatment. See the classic @bollen1989 for more details regarding standard models.
+
+
 
 # Graphical models
 
@@ -984,3 +1111,5 @@ caret zelig recipes tm? sjstats car
 [^jagam]: There is the <span class="func">jagam</span> function in <span class="pack">mgcv</span> to use JAGS, but I can't think of a reason to use it over <span class="pack">brms</span>.
 
 [^lgc]: Using a mixed model on longitudinal data with <span class="pack">flexmix</span> negates the need to use SEM for what are sometimes called <span class="emph">Latent Class Growth Curve Models</span>, <span class="emph">Growth Mixture Models</span> or <span class="emph">Latent Trajectory Models</span>.  If you need indirect effects, you'll have to use Mplus or similar, and good luck with that.
+
+[^lavlack]: Currently lavaan lacks the incorporation of categorical latent variables (i.e. mixture models), but you have more functionality in R for those elsewhere than you would Mplus. The current lavaan also lacks multilevel SEM, but that is a pretty rare model.  There are very minor other differences.
