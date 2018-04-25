@@ -968,16 +968,16 @@ psych_perc = get_perc('psych')
 
 - <span class="pack">lavaan</span> `r lavaan_perc`%
 - <span class="pack">lavaan.survey</span> `r lavaan_survey_perc`%
-- <span class="basepack">blavaan</span> `r blavaan_perc`%
-- <span class="basepack">lavaanPlot</span> `r lavaanPlot_perc`%
-- <span class="basepack">semTools</span> `r semTools_perc`%
-- <span class="basepack">regsem</span> `r regsem_perc`%
-- <span class="basepack">mediation</span> `r mediation_perc`%
-- <span class="basepack">piecwiseSEM</span> `r piecwiseSEM_perc`%
-- <span class="basepack">MplusAutomation</span> `r MplusAutomation_perc`%
-- <span class="basepack">lava</span> `r lava_perc`%
-- <span class="basepack">OpenMx</span> `r OpenMx_perc`%
-- <span class="basepack">psych</span> `r psych_perc`%
+- <span class="pack">blavaan</span> `r blavaan_perc`%
+- <span class="pack">lavaanPlot</span> `r lavaanPlot_perc`%
+- <span class="pack">semTools</span> `r semTools_perc`%
+- <span class="pack">regsem</span> `r regsem_perc`%
+- <span class="pack">mediation</span> `r mediation_perc`%
+- <span class="pack">piecwiseSEM</span> `r piecwiseSEM_perc`%
+- <span class="pack">MplusAutomation</span> `r MplusAutomation_perc`%
+- <span class="pack">lava</span> `r lava_perc`%
+- <span class="pack">OpenMx</span> `r OpenMx_perc`%
+- <span class="pack">psych</span> `r psych_perc`%
 
 
 ## SEM recommended reading
