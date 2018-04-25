@@ -261,7 +261,7 @@ div.tocify {
 <div id="miscellaneous" class="section level4">
 <h4>Miscellaneous</h4>
 <p>I will ignore the data argument in every example. It is implied that you would supply it.</p>
-<p>For those who want to get more into the implementation of many of these models, I have raw R code for many (probably most) of the techniques discussed <a href="https://github.com/m-clark/Miscellaneous-R-Code">here</a>.</p>
+<p>For those who want to get more into the implementation of many of these models, I have raw R code that demonstrates many (probably most) of the techniques discussed <a href="https://github.com/m-clark/Miscellaneous-R-Code">here</a>.</p>
 <p>What this won’t provide:</p>
 <ul>
 <li>data processing required</li>
@@ -738,7 +738,7 @@ cluster<span class="op">::</span><span class="kw">diana</span>(X_dist)          
 <span class="st">  z ~ x + q</span>
 <span class="st">&quot;</span>
 
-result =<span class="st"> </span><span class="kw">sem</span>(model)
+result =<span class="st"> </span>lavaan<span class="op">::</span><span class="kw">sem</span>(model)
 <span class="kw">summary</span>(result, <span class="dt">standardized=</span><span class="ot">TRUE</span>)  <span class="co"># result with standardized effects</span></code></pre></div>
 </div>
 <div id="confirmatory-factor-analysis" class="section level2">
@@ -787,13 +787,13 @@ result =<span class="st"> </span><span class="kw">cfa</span>(model)
 <h2>SEM analysis list of packages</h2>
 <ul>
 <li><span class="pack">lavaan</span> 93%</li>
-<li><span class="pack">lavaan.survey</span> 14%</li>
+<li><span class="pack">lavaan.survey</span> 80%</li>
 <li><span class="pack">blavaan</span> 20%</li>
 <li><span class="pack">lavaanPlot</span> 18%</li>
 <li><span class="pack">semTools</span> 89%</li>
 <li><span class="pack">regsem</span> 19%</li>
 <li><span class="pack">mediation</span> 86%</li>
-<li><span class="pack">piecwiseSEM</span> 14%</li>
+<li><span class="pack">piecewiseSEM</span> 59%</li>
 <li><span class="pack">MplusAutomation</span> 77%</li>
 <li><span class="pack">lava</span> 97%</li>
 <li><span class="pack">OpenMx</span> 92%</li>
@@ -804,7 +804,7 @@ result =<span class="st"> </span><span class="kw">cfa</span>(model)
 <h2>SEM recommended reading</h2>
 <p><a href="https://www.rdocumentation.org/taskviews#Psychometrics">Psychometrics Task View</a></p>
 <p>My doc on SEM covers a lot of ground and provides more extensive examples.</p>
-<p><span class="citation">Kline (<a href="#ref-kline2015principles">2015</a>)</span> is a very popular applied treatment. See the classic <span class="citation">(<span class="citeproc-not-found" data-reference-id="bollen1989"><strong>???</strong></span>)</span> for more details regarding standard models.</p>
+<p><span class="citation">Kline (<a href="#ref-kline2015principles">2015</a>)</span> is a very popular applied treatment. See the classic <span class="citation">Bollen (<a href="#ref-bollen1989">1989</a>)</span> for more details regarding standard models.</p>
 </div>
 </div>
 <div id="graphical-models" class="section level1">
@@ -812,6 +812,12 @@ result =<span class="st"> </span><span class="kw">cfa</span>(model)
 <p><a href="https://www.rdocumentation.org/taskviews#gR">Graphical Model Task View</a></p>
 <p>ggm bnlearn network sna</p>
 <p>igraph networkd3 visnetwork Diagrammer</p>
+<div id="list-of-packages" class="section level2">
+<h2>list of packages</h2>
+</div>
+<div id="recommended-reading" class="section level2">
+<h2>recommended reading</h2>
+</div>
 </div>
 <div id="time-series" class="section level1">
 <h1>Time series</h1>
@@ -821,17 +827,35 @@ result =<span class="st"> </span><span class="kw">cfa</span>(model)
 lag
 posix
 <span class="kw">as.Date</span>()</code></pre></div>
+<div id="list-of-packages-1" class="section level2">
+<h2>list of packages</h2>
+</div>
+<div id="recommended-reading-1" class="section level2">
+<h2>recommended reading</h2>
+</div>
 </div>
 <div id="spatial-models" class="section level1">
 <h1>Spatial models</h1>
 <p><a href="https://www.rdocumentation.org/taskviews#Spatial">Spatial Task View</a> <a href="https://www.rdocumentation.org/taskviews#SpatioTemporal">SpatialTemporal Task View</a></p>
 <p>spatial sf sp spdep mgcv ggmap leaflet plotly</p>
+<div id="list-of-packages-2" class="section level2">
+<h2>list of packages</h2>
+</div>
+<div id="recommended-reading-2" class="section level2">
+<h2>recommended reading</h2>
+</div>
 </div>
 <div id="machine-learning" class="section level1">
 <h1>Machine learning</h1>
 <p>You can find detailed examples in my document <a href="https://m-clark.github.io/introduction-to-machine-learning">here</a>.</p>
 <p><a href="https://www.rdocumentation.org/taskviews#MachineLearning">Machine Learning Task View</a></p>
 <p>e1071 caret mlr glmnet randomForest gbm xgboost lime</p>
+<div id="list-of-packages-3" class="section level2">
+<h2>list of packages</h2>
+</div>
+<div id="recommended-reading-3" class="section level2">
+<h2>recommended reading</h2>
+</div>
 </div>
 <div id="bayesian" class="section level1">
 <h1>Bayesian</h1>
@@ -843,7 +867,13 @@ posix
 </div>
 <div id="other" class="section level2">
 <h2>Other</h2>
-<p>greta</p>
+<p>greta tidybayes</p>
+</div>
+<div id="list-of-packages-4" class="section level2">
+<h2>list of packages</h2>
+</div>
+<div id="recommended-reading-4" class="section level2">
+<h2>recommended reading</h2>
 </div>
 </div>
 <div id="text" class="section level1">
@@ -852,13 +882,23 @@ posix
 <p><a href="https://www.rdocumentation.org/taskviews#NaturalLanguageProcessing">Task View</a></p>
 <p>tidytext text2vec stringdist</p>
 <p>tm lda topicmodels keras</p>
+<div id="list-of-packages-5" class="section level2">
+<h2>list of packages</h2>
+</div>
+<div id="recommended-reading-5" class="section level2">
+<h2>recommended reading</h2>
+</div>
+</div>
+<div id="censored-truncated-and-related" class="section level1">
+<h1>Censored, truncated, and related</h1>
+<p>glm.nb, glmer.nb survival pscl VGAM, gamlss</p>
 </div>
 <div id="discipline-specific" class="section level1">
 <h1>Discipline specific</h1>
 <p>Probably should avoid</p>
 <div id="ecological" class="section level2">
 <h2>Ecological</h2>
-<p><a href="https://www.rdocumentation.org/taskviews#Environmetrics">Task View</a> vegan</p>
+<p><a href="https://www.rdocumentation.org/taskviews#Environmetrics">Task View</a> vegan Zuur et al.</p>
 </div>
 <div id="financial" class="section level2">
 <h2>Financial</h2>
@@ -872,6 +912,9 @@ posix
 <div id="references" class="section level1 unnumbered">
 <h1>References</h1>
 <div id="refs" class="references">
+<div id="ref-bollen1989">
+<p>Bollen, Kenneth. 1989. “Structural Equations with Latent Variables.” <em>New York: Wiley</em>.</p>
+</div>
 <div id="ref-everitt2011cluster">
 <p>Everitt, Brian S., Sabine Landau, Leese Morven, and Daniel Stahl. 2011. <em>Cluster Analysis</em>. 5th ed. John Wiley &amp; Sons.</p>
 </div>
