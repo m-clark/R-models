@@ -86,7 +86,7 @@ What this won't provide:
 - visualization
 - a list of every package that *might* be useful
 
-For some content I will provide recommended reading.
+For some content I will provide recommended reading.  These are texts are mostly those I've benefitted from or I would think would be useful to others, especially those just starting out with analysis and/or at an intermediate stage.  They are not meant to be a list seminal works on the subject, though some might be.
 
 
 Color coding:
@@ -238,6 +238,7 @@ The standard GLM will only take you so far in terms of distributions for the tar
 
 Some might be interested in quantile regression.  The <span class="pack">quantreg</span> package would be a starting point.  In addition, the <span class="pack">car</span> package has a few miscellaneous functions for various models, e.g. add-variable plots, variance inflation factors, influence metrics, and more.
 
+
 ## Linear models and GLM list of packages
 
 ```{r lm_percs, eval=TRUE, echo=FALSE}
@@ -274,6 +275,14 @@ The following is a list of the packages mentioned in this section and their perc
 - <span class="pack">quantreg</span> `r quantreg_perc`%
 - <span class="pack">car</span> `r car_perc`%
 
+## GLM recommended reading
+
+
+@harrell2015
+
+@gelman_arm
+
+@hardin_generalized_2012
 
 
 
@@ -440,6 +449,8 @@ ordinal_perc = get_perc('ordinal')
 @wood_generalized_2017
 
 @fahrmeir2013regression
+
+@west2014linear
 
 # Additive models
 
@@ -661,6 +672,8 @@ survey_perc = get_perc('survey')
 ## Survey analysis recommended reading
 
 @lumley2011complex
+
+@heeringa2017applied
 
 # Principal components & Factor analysis
 
@@ -996,74 +1009,148 @@ SEM can be seen as a very large subset of what are generally called <span class=
 
 In most cases there are two main approaches to running such models.  One is where two data sets are provided, one which specifies the nodes and various attributes associated with them. In addition, one has an edge list or data frame that specifies the nodes from which a connection begins, the nodes to which they connect, and possibly a column specifying the value/weight for the connection.  The other approach regards an <span class="emph">adjacency matrix</span>, which is like a correlation or (inverse) distance matrix, where the off-diagonal values specify connections among the nodes, and may be simply binary or comprise continuous <span class="emph">weights</span>.
 
-One of the more popular and powerful packages is igraph, and even when you're using others, they are often using it under the hood. Given the right data, one can create a graph object, and then get any number of statistics, visualize it, or whatever.  A lot of it is for the creation of graphs, but normally graphs are too big to do by hand and/or you'd have the data already, and it'd be easier to create an adjacency matrix from your typical data frame and work from there.
+One of the more popular and powerful packages is <span class="pack">igraph</span>, and even when you're using others, they are often using it under the hood. Given the right data, one can create a graph object, and then get any number of statistics, visualize it, or whatever.  A lot of it is for the creation of graphs, but normally graphs are too big to do by hand and/or you'd have the data already, and it'd be easier to create an adjacency matrix from your typical data frame and work from there.
 
 ```{r gm_igraph, echo=-1}
 # g = igraph::make_graph("Zachary")  # a social network
-g = from_adjacency(adjmat)     # create graph from adjacency matrix
-g = from_data_frame(df)        # create graph from a data frame
-as_adjacency_matrix(g)         # convert graph to adjacency
-plot(g)                        # plot it
-degree(g)                      # degree for each node
-hub_score(g)                   # hub score for each node
-count_triangles(g)             # N triangles for each node
+g = igraph::from_adjacency(adjmat)      # create graph from adjacency matrix
+g = from_data_frame(df)                 # create graph from a data frame
+as_adjacency_matrix(g)                  # convert graph to adjacency
+plot(g)                                 # plot it
+degree(g)                               # degree for each node
+hub_score(g)                            # hub score for each node
+count_triangles(g)                      # N triangles for each node
 clusters = cluster_edge_betweenness(g)  # detect clusters
 membership(clusters)
 communities(clusters)
+write_graph(g, 'g.dot')                 # write graph to e.g. dot format
 ```
 
-The basic plot functionality for igraph is... basic.  It's not worth your time to make it pretty.  To that end I suggest packages like networkd3, visNetwork, and Diagrammer.  It's not too big a deal to convert the graph object to something they will use (visNetwork will even work with an igraph object, e.g. with toVisNetworkData).
+The basic plot functionality for <span class="pack">igraph</span> is... basic.  It's not worth your time to make it pretty.  To that end I suggest packages like <span class="pack">networkd3</span>, <span class="pack">visNetwork</span>, and <span class="pack">Diagrammer.</span>  It's not too big a deal to convert the graph object to something they will use (<span class="pack">visNetwork</span> will even work with an igraph object, e.g. with <span class="func">toVisNetworkData</span>).
 
 ### Bayesian networks
 
-A package that's useful for bayesian networks, or probabilistic DAG, is bnlearn.  In this case we are looking for a graphical structure based on the data we have. The package allows for model fitting such that you could essentially duplicate a path analysis SEM-style, but the strength is in the model search and selection via a variety algorithms, possibly with cross-validation.  It can work with binary, continuous, or a mix of variables.  With blacklists and whitelists, one can impose theoretical structure on the search such that some connections are always present while others are forbidden.
+A package that's useful for <span class="emph">bayesian networks</span>, or probabilistic DAG, is <span class="pack">bnlearn.</span>  In this case we are looking for a graphical structure based on the data we have. The package allows for model fitting such that you could essentially duplicate a path analysis SEM-style, but the strength is in the model search and selection via a variety algorithms, possibly with cross-validation.  It can work with binary, continuous, or a mix of variables.  With blacklists and whitelists, one can impose theoretical structure on the search such that some connections are always present while others are forbidden.
 
 ```{r gm_bnlearn}
-model = gs(X, blacklist = bl)   # grow-shrink algorithm with a blacklist
+model = bnlearn::gs(X, blacklist = bl)   # grow-shrink algorithm with a blacklist
 plot(model)
 ```
 
 ### Network analysis
 
+<span class="emph">Network analysis</span> employs graphical models to study things like social or other specific types of networks.  Two primary packages are <span class="pack">network</span>, which like <span class="pack">igraph</span>, serves as a foundation package, and <span class="pack">sna.</span>  The primary object is a network class object instead of a graph object like with <span class="pack">igraph</span>, but you more or less proceed similarly.  
 
-ggm
-bnlearn
-network sna 
+```{r gn_sna}
+g = network::network(adj_mat, directed=FALSE)   # undirected network based on adjacency matrix
+sna::summary(g)                                 # use sna for the rest
+plot(g)
+betweenness(g)                                  # various network statistics
+degree(g)
+efficiency(g)
+model = ergm::ergm(g ~ edges)                   # exponential random graph model
+```
 
-igraph
-networkd3
-visnetwork
-Diagrammer
+With <span class="pack">sna</span> you may have some specific statistics not found in <span class="pack">igraph</span>, but it's not really an either or, as you can easily move between the two. As with <span class="pack">igraph</span>, you'll probably want to use a different package for visualization.  While <span class="pack">sna</span> has some modeling capabilities, you might also consider <span class="pack">ergm</span> for exponential random graph models.
 
-## list of packages
 
-## recommended reading
+## Graphical models list of packages
+
+```{r gm_percs, eval=TRUE, echo=FALSE}
+igraph_perc = get_perc('igraph')
+bnlearn_perc = get_perc('bnlearn')
+network_perc = get_perc('network')
+sna_perc = get_perc('sna')
+ergm_perc = get_perc('ergm')
+networkd3_perc = get_perc('networkd3')
+visnetwork_perc = get_perc('visNetwork')
+Diagrammer_perc = get_perc('Diagrammer')
+```
+
+
+- <span class="pack">igraph</span> `r igraph_perc`%
+- <span class="pack">bnlearn</span> `r bnlearn_perc`%
+- <span class="pack">network</span> `r network_perc`%
+- <span class="pack">sna</span> `r sna_perc`%
+- <span class="pack">ergm</span> `r ergm_perc`%
+- <span class="pack">networkd3</span> `r networkd3_perc`%
+- <span class="pack">visNetwork</span> `r visnetwork_perc`%
+- <span class="pack">Diagrammer</span> `r Diagrammer_perc`%
+
+
+
+## Graphical models recommended reading
 
 [Graphical Model Task View](https://www.rdocumentation.org/taskviews#gR)
+
+@pearl2009causality Also, he has every article available on [his website](http://bayes.cs.ucla.edu/jp_home.html).
+
+There are several UseR! series entries for graphical models and network analysis.
+
+- @hojsgaard2012graphical
+- @luke2015network
+- @kolaczyk2014network
+- @nagarajan2013bnetwork
 
 
 # Time series
 
-[Time Series Task View](https://www.rdocumentation.org/taskviews#TimeSeries)
+With time series data, there isn't really a specific model of concern.  For example, for a specific situation with observations over time, one could run a mixed model, a GAM, a gaussian process model, an ARIMA model, hidden markov model, or a recurrent neural network.  However, there is concern about how to deal with the data itself even for basic processing and visualization.
+
+To begin, note that there is a lot in the base R installation for dealing with time-based objects.
+
+```{r ts_funcs}
+acf(Series)              # autocorrelation plot
+lag(Series, 1)           # can be used in a formula
+diff(Series, lag = 2)    # take differences
+fft(Series)              # fast fourier transform
 
 
-xts, forecast, prophet, lubridate, tseries, arima
+Series.ts = as.ts(Series)
+plot(Series.ts)
+frequency(Series.ts)
+```
 
+A couple very useful packages that make dealing with time and dates are xts, zoo, and lubridate.
 
-```{r ts-funcs}
-acf
-lag
-posix
-as.Date()
+```{r ts_lubridate}
+xts::as.xts(Series)
+apply.monthly(Series, somefunction)  # apply a function at a specific period
+
+zoo::window(Series)
+
+lubridate::as_date(myDates)
+ymd(myDates)                # convert to YYYY-MM-DD format
+hour(myDates)               # Extract hours
+```
+
+For modeling, again that depends on many things and may just be one of many models already demonstrated.  I'll mention forecast as a means to get started with traditional models like auto-regressive moving average and state-space models (with tidy piping functionality), and prophet, an offering by Facebook that uses Stan (see Bayesian section).
+
+```{r ts_models}
+forecast::auto.arima(Series) %>% plot()
+
+# Series.df is a data.frame with two columns of date ('ds') and value ('y')
+m = prophet::prophet(Series.df, growth = 'linear', n.changepoints = 1)
+m$changepoints                                 # date of estimated changepoint
+forecast = predict(m, Series.df)
+plot(m, fcst=forecast)
 ```
 
 
-## list of packages
-## recommended reading
+## Time series list of packages
+
+xts, zoo, forecast, prophet, lubridate
+
+
+## Time series recommended reading
+
+[Time Series Task View](https://www.rdocumentation.org/taskviews#TimeSeries)
+
 
 # Spatial models
-[Spatial Task View](https://www.rdocumentation.org/taskviews#Spatial)
-[SpatialTemporal Task View](https://www.rdocumentation.org/taskviews#SpatioTemporal)
+
+
+## list of packages
 
 spatial
 sf
@@ -1074,8 +1161,11 @@ ggmap
 leaflet
 plotly
 
-## list of packages
 ## recommended reading
+
+[Spatial Task View](https://www.rdocumentation.org/taskviews#Spatial)
+[SpatialTemporal Task View](https://www.rdocumentation.org/taskviews#SpatioTemporal)
+
 
 # Machine learning
 
@@ -1094,6 +1184,14 @@ lime
 
 ## list of packages
 ## recommended reading
+
+
+@hastie_elements_2009  freely available [here](https://web.stanford.edu/~hastie/ElemStatLearn/)
+
+@efron2016computer
+
+@murphy_machine_2012
+
 
 # Bayesian
 
