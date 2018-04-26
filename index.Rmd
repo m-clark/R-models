@@ -75,7 +75,7 @@ Preference is given to base R functionality or what are perceived as very common
 
 #### Miscellaneous
 
-I will ignore the data argument in every example. It is implied that you would supply it. 
+I will ignore the data argument in every example that uses the typical R formula approach. It is implied that you would supply it. 
 
 For those who want to get more into the implementation of many of these models, I have raw R code that demonstrates many (probably most) of the techniques discussed [here](https://github.com/m-clark/Miscellaneous-R-Code).
 
@@ -857,7 +857,7 @@ I have a bit on mixture models and latent class analysis from the SEM perspectiv
 
 # Structural Equation Modeling
 
-<span class="emph">Structural Equation Modeling</span> (SEM) is a very broad technique that encompasses and extends many others. In particular it combines measurement models regarding latent variables and observed variables, and structural models to explore the effects of latent and observed variables on others.
+<span class="emph">Structural Equation Modeling</span> (SEM) is a very broad technique that encompasses and extends many others, bringing together regression, factor analysis, mixtures models and more. In particular it combines measurement models regarding latent variables and observed variables, and structural models to explore the effects of latent and observed variables on others.
 
 Due to the use of latent variables and other specifics, a special syntax is required to run SEM models, but otherwise it does not require much to get going, at least with the <span class="pack">lavaan</span> package.  For those familiar with Mplus, it and various extensions can do about 90% of what Mplus does[^lavlack], and even spits out results in the same format.
 
@@ -992,7 +992,39 @@ My doc on SEM covers a lot of ground and provides more extensive examples.
 
 # Graphical models
 
-[Graphical Model Task View](https://www.rdocumentation.org/taskviews#gR)
+SEM can be seen as a very large subset of what are generally called <span class="emph">graphical models</span>, where variables are represented by <span class="emph">nodes</span> (sometimes called vertices) and the relations among them are represented by <span class="emph"></span> (sometimes called arcs).  Edges may be <span class="emph">directed</span> (i.e. have arrows) or <span class="emph">undirected</span>.  With directed (acyclic) graphs (DAG), we get into things like causal modeling, SEM, bayesian networks, etc. With undirected graphs, often called a Markov random fields, applications are in network models, spatial analysis, and more.
+
+In most cases there are two main approaches to running such models.  One is where two data sets are provided, one which specifies the nodes and various attributes associated with them. In addition, one has an edge list or data frame that specifies the nodes from which a connection begins, the nodes to which they connect, and possibly a column specifying the value/weight for the connection.  The other approach regards an <span class="emph">adjacency matrix</span>, which is like a correlation or (inverse) distance matrix, where the off-diagonal values specify connections among the nodes, and may be simply binary or comprise continuous <span class="emph">weights</span>.
+
+One of the more popular and powerful packages is igraph, and even when you're using others, they are often using it under the hood. Given the right data, one can create a graph object, and then get any number of statistics, visualize it, or whatever.  A lot of it is for the creation of graphs, but normally graphs are too big to do by hand and/or you'd have the data already, and it'd be easier to create an adjacency matrix from your typical data frame and work from there.
+
+```{r gm_igraph, echo=-1}
+# g = igraph::make_graph("Zachary")  # a social network
+g = from_adjacency(adjmat)     # create graph from adjacency matrix
+g = from_data_frame(df)        # create graph from a data frame
+as_adjacency_matrix(g)         # convert graph to adjacency
+plot(g)                        # plot it
+degree(g)                      # degree for each node
+hub_score(g)                   # hub score for each node
+count_triangles(g)             # N triangles for each node
+clusters = cluster_edge_betweenness(g)  # detect clusters
+membership(clusters)
+communities(clusters)
+```
+
+The basic plot functionality for igraph is... basic.  It's not worth your time to make it pretty.  To that end I suggest packages like networkd3, visNetwork, and Diagrammer.  It's not too big a deal to convert the graph object to something they will use (visNetwork will even work with an igraph object, e.g. with toVisNetworkData).
+
+### Bayesian networks
+
+A package that's useful for bayesian networks, or probabilistic DAG, is bnlearn.  In this case we are looking for a graphical structure based on the data we have. The package allows for model fitting such that you could essentially duplicate a path analysis SEM-style, but the strength is in the model search and selection via a variety algorithms, possibly with cross-validation.  It can work with binary, continuous, or a mix of variables.  With blacklists and whitelists, one can impose theoretical structure on the search such that some connections are always present while others are forbidden.
+
+```{r gm_bnlearn}
+model = gs(X, blacklist = bl)   # grow-shrink algorithm with a blacklist
+plot(model)
+```
+
+### Network analysis
+
 
 ggm
 bnlearn
@@ -1004,7 +1036,10 @@ visnetwork
 Diagrammer
 
 ## list of packages
+
 ## recommended reading
+
+[Graphical Model Task View](https://www.rdocumentation.org/taskviews#gR)
 
 
 # Time series
