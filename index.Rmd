@@ -1175,22 +1175,119 @@ lubridate_perc = get_perc('lubridate')
 
 # Spatial models
 
+Spatial models incorporate additional structure in a model that has some spatial component, usually, but not limited to, geography.  A lot of the work you'll do is with the data processing rather than modeling part.  
 
-## list of packages
+A starting point for spatial data is the <span class="pack">sp</span> package, which provides basic spatial objects that can then be used for mapping or modeling, such as <span class="objclass">SpatialPoints</span>, <span class="objclass">SpatialPolygonsDataFrame</span> and more.  Many, many other packages rely on <span class="pack">sp</span>.
 
-spatial
-sf
+
+```{r sp_getgraph, eval=TRUE, echo=FALSE}
+sp_depgraph = get_depgraph('sp')
+```
+
+```{r sp_graph, echo=F, eval=T}
+nodes = sp_depgraph$node_df %>% 
+  rename(label=name) %>% 
+  rownames_to_column(var='id') %>% 
+  mutate(id=as.integer(id)-1)
+edges = sp_depgraph$edge_df %>% 
+  rename(from=source,
+         to=target)
+
+edge_trim = edges %>% 
+  filter(to == 0)
+visNetwork(nodes = nodes %>% 
+             filter(id %in% c(0, edge_trim$from)) %>% 
+             mutate(value=c(100, rep(0, nrow(.)-1))), 
+           edges=edge_trim) %>% 
+  visEdges(color=list(opacity=.10))
+```
+
+
+
+A lot of <span class="pack">sp</span>, and its corresponding UseR book, is geared toward creating a map from scratch, which is great, but often rarely needed, as typically one already has map data, e.g. in the form of shape files, and wants to simply import and then model or visualize it.  It also uses lattice and base R for visualization, and is inordinately slow to visualize its products.   While sp has been around for a long time, the newer <span class="pack">sf</span> ([simple features](https://en.wikipedia.org/wiki/Simple_Features)) package will eventually supercede it (or at least that's the plan), so I'll give a quick example.
+
+```{r spatial_sf}
+map_obj = sf::st_read(system.file("shape/nc.shp", package="sf"))
+plot(map_obj)
+head(map_obj)         # spatial data.frame
+
+world1 = st_as_sf(maps::map('world', plot = FALSE, fill = TRUE))  # convert maps object to sf
+ggplot2::ggplot() + geom_sf(data = world1)                        # plot with ggplot2
+```
+
+
+The spdep package can serve as a first step to spatial modeling, providing common spatial descriptive tests and models.  However, functionality may be available in other packages that does not require specific spatial data structures.
+
+```{r spatial_spdep}
+nb = spdep::nb2listw(nb_object, style="W")             # create a weigthed neighbor list
+moran(y, list=nb, length(nb_object), Szero(nb))        # Moran's I
+moran.test(y, nb)                                      # Moran test for spatial autocorrelation
+
+model = spautolm(y ~ x + z, listw=nb, family="CAR")    # conditional autoregressive model
+summary(model)
+
+model = lme(y ~ x, correlation=corSpatial(~ lat + lon, type='gaussian'))   # via mixed model
+model = gam(y ~ s(lat + lon, bs='gp'))                         # via additive model
+model = gam(y ~ s(x) + s(geog_units, bs='mrf', xt=polygons))   # discrete space (markov random field)
+```
+
+### Other tools
+
+The <span class="pack">maptools</span> package allows for easy conversion and combining of <span class="pack">sp</span> objects, and provides additional useful functions. For modeling, Bayesian approaches, like those that [R-INLA](http://www.r-inla.org) provides, are common in the spatial realm.
+
+For visualization, use <span class="pack">maps</span> for a quick peek and subsequent conversion to <span class="pack">sp</span> object (via maptools). For pretty (and often pretty easy) visualizations,  geom_sf (in ggplot2), <span class="pack">ggmap</span>, <span class="pack">mapview</span>, <span class="pack">leaflet</span>, and <span class="pack">plotly</span>.
+
+Note also that there are a lot of packages being used under the hood, e.g. <span class="pack">rgeos</span>, <span class="pack">rgdal</span>, but which you won't use directly. In general, spatial tools, especially for visualization, have come a long way relatively recently, so you'll best want to investigate to see what's out there regularly.  
+
+## Spatial list of packages
+
 sp
+sf
 spdep
-mgcv
-ggmap
+maptools
+maps
+mapview
 leaflet
 plotly
+ggmap
+rgeos
+rgdal
 
-## recommended reading
+```{r ts_percs, eval=TRUE, echo=FALSE}
+sp_perc = get_perc('sp')
+sf_perc = get_perc('sf')
+spdep_perc = get_perc('spdep')
+maptools_perc = get_perc('maptools')
+maps_perc = get_perc('maps')
+mapview_perc = get_perc('mapview')
+leaflet_perc = get_perc('leaflet')
+plotly_perc = get_perc('plotly')
+ggmap_perc = get_perc('ggmap')
+rgeos_perc = get_perc('rgeos')
+rgdal_perc = get_perc('rgdal')
+```
+
+
+- <span class="pack">sp</span> `r sp_perc`%
+- <span class="pack">sf</span> `r sf_perc`%
+- <span class="pack">spdep</span> `r spdep_perc`%
+- <span class="pack">maptools</span> `r maptools_perc`%
+- <span class="pack">maps</span> `r maps_perc`%
+- <span class="pack">mapview</span> `r mapview_perc`%
+- <span class="pack">leaflet</span> `r leaflet_perc`%
+- <span class="pack">plotly</span> `r plotly_perc`%
+- <span class="pack">ggmap</span> `r ggmap_perc`%
+- <span class="pack">rgeos</span> `r rgeos_perc`%
+- <span class="pack">rgdal</span> `r rgdal_perc`%
+
+
+## Spatial recommended reading
 
 [Spatial Task View](https://www.rdocumentation.org/taskviews#Spatial)
+
 [SpatialTemporal Task View](https://www.rdocumentation.org/taskviews#SpatioTemporal)
+
+@bivand2013applied  Not sure how useful this still is as far as how you'd want to go about things these days, but you would likely learn a lot.
 
 
 # Machine learning
