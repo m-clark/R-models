@@ -1180,11 +1180,11 @@ Spatial models incorporate additional structure in a model that has some spatial
 A starting point for spatial data is the <span class="pack">sp</span> package, which provides basic spatial objects that can then be used for mapping or modeling, such as <span class="objclass">SpatialPoints</span>, <span class="objclass">SpatialPolygonsDataFrame</span> and more.  Many, many other packages rely on <span class="pack">sp</span>.
 
 
-```{r sp_getgraph, eval=TRUE, echo=FALSE}
+```{r sp_getgraph, eval=TRUE, echo=FALSE, cache=FALSE}
 sp_depgraph = get_depgraph('sp')
 ```
 
-```{r sp_graph, echo=F, eval=T}
+```{r sp_graph, echo=F, eval=T, cache=FALSE}
 nodes = sp_depgraph$node_df %>% 
   rename(label=name) %>% 
   rownames_to_column(var='id') %>% 
@@ -1241,19 +1241,8 @@ Note also that there are a lot of packages being used under the hood, e.g. <span
 
 ## Spatial list of packages
 
-sp
-sf
-spdep
-maptools
-maps
-mapview
-leaflet
-plotly
-ggmap
-rgeos
-rgdal
 
-```{r ts_percs, eval=TRUE, echo=FALSE}
+```{r spatial_percs, eval=TRUE, echo=FALSE}
 sp_perc = get_perc('sp')
 sf_perc = get_perc('sf')
 spdep_perc = get_perc('spdep')
