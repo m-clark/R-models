@@ -260,8 +260,8 @@ div.tocify {
 <p>Preference is given to base R functionality or what are perceived as very commonly used packages. ‘Very common’ is based on my own knowledge consulting across dozens of disciplines along with just regularly following the R community, and things like the rankings at <a href="https://rdocumentation.org">RDocumentation.org</a>, and packages listed in <a href="https://www.rdocumentation.org/taskviews">CRAN Task Views</a>.</p>
 <div id="miscellaneous" class="section level4">
 <h4>Miscellaneous</h4>
-<p>I will ignore the data argument in every example. It is implied that you would supply it.</p>
-<p>For those who want to get more into the implementation of many of these models, I have raw R code for many (probably most) of the techniques discussed <a href="https://github.com/m-clark/Miscellaneous-R-Code">here</a>.</p>
+<p>I will ignore the data argument in every example that uses the typical R formula approach. It is implied that you would supply it.</p>
+<p>For those who want to get more into the implementation of many of these models, I have raw R code that demonstrates many (probably most) of the techniques discussed <a href="https://github.com/m-clark/Miscellaneous-R-Code">here</a>.</p>
 <p>What this won’t provide:</p>
 <ul>
 <li>data processing required</li>
@@ -269,7 +269,7 @@ div.tocify {
 <li>visualization</li>
 <li>a list of every package that <em>might</em> be useful</li>
 </ul>
-<p>For some content I will provide recommended reading.</p>
+<p>For some content I will provide recommended reading. These are texts are mostly those I’ve benefitted from or I would think would be useful to others, especially those just starting out with analysis and/or at an intermediate stage. They are not meant to be a list seminal works on the subject, though some might be.</p>
 <p>Color coding:</p>
 <ul>
 <li><span class="emph">emphasis</span></li>
@@ -397,6 +397,12 @@ mlogit<span class="op">::</span><span class="kw">mlogit</span>(y <span class="op
 <li><span class="pack">car</span> 98%</li>
 </ul>
 </div>
+<div id="glm-recommended-reading" class="section level2">
+<h2>GLM recommended reading</h2>
+<p><span class="citation">Harrell (<a href="#ref-harrell2015">2015</a>)</span></p>
+<p><span class="citation">Gelman and Hill (<a href="#ref-gelman_arm">2006</a>)</span></p>
+<p><span class="citation">Hardin and Hilbe (<a href="#ref-hardin_generalized_2012">2012</a>)</span></p>
+</div>
 </div>
 <div id="regularization" class="section level1">
 <h1>Regularization</h1>
@@ -479,6 +485,8 @@ mlogit<span class="op">::</span><span class="kw">mlogit</span>(y <span class="op
 <p><span class="citation">Gelman and Hill (<a href="#ref-gelman_arm">2006</a>)</span></p>
 <p><span class="citation">Wood (<a href="#ref-wood_generalized_2017">2017</a>)</span></p>
 <p><span class="citation">Fahrmeir et al. (<a href="#ref-fahrmeir2013regression">2013</a>)</span></p>
+<p><span class="citation">West, Welch, and Galecki (<a href="#ref-west2014linear">2014</a>)</span></p>
+<p>I have a document <a href="https://m-clark.github.io/generalized-additive-models/">here</a>.</p>
 </div>
 </div>
 <div id="additive-models" class="section level1">
@@ -528,6 +536,7 @@ mlogit<span class="op">::</span><span class="kw">mlogit</span>(y <span class="op
 </div>
 <div id="gam-recommended-reading" class="section level2">
 <h2>GAM recommended reading</h2>
+<p>Feel free to peruse <a href="https://m-clark.github.io/generalized-additive-models/">my document</a>.</p>
 <p><span class="citation">Wood (<a href="#ref-wood_generalized_2017">2017</a>)</span></p>
 <p><span class="citation">Fahrmeir et al. (<a href="#ref-fahrmeir2013regression">2013</a>)</span></p>
 </div>
@@ -601,6 +610,7 @@ dclus =<span class="st"> </span><span class="kw">svydesign</span>(<span class="d
 <div id="survey-analysis-recommended-reading" class="section level2">
 <h2>Survey analysis recommended reading</h2>
 <p><span class="citation">Lumley (<a href="#ref-lumley2011complex">2011</a>)</span></p>
+<p><span class="citation">Heeringa, West, and Berglund (<a href="#ref-heeringa2017applied">2017</a>)</span></p>
 </div>
 </div>
 <div id="principal-components-factor-analysis" class="section level1">
@@ -728,7 +738,7 @@ cluster<span class="op">::</span><span class="kw">diana</span>(X_dist)          
 </div>
 <div id="structural-equation-modeling" class="section level1">
 <h1>Structural Equation Modeling</h1>
-<p><span class="emph">Structural Equation Modeling</span> (SEM) is a very broad technique that encompasses and extends many others. In particular it combines measurement models regarding latent variables and observed variables, and structural models to explore the effects of latent and observed variables on others.</p>
+<p><span class="emph">Structural Equation Modeling</span> (SEM) is a very broad technique that encompasses and extends many others, bringing together regression, factor analysis, mixtures models and more. In particular it combines measurement models regarding latent variables and observed variables, and structural models to explore the effects of latent and observed variables on others.</p>
 <p>Due to the use of latent variables and other specifics, a special syntax is required to run SEM models, but otherwise it does not require much to get going, at least with the <span class="pack">lavaan</span> package. For those familiar with Mplus, it and various extensions can do about 90% of what Mplus does<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a>, and even spits out results in the same format.</p>
 <div id="path-analysis" class="section level2">
 <h2>Path Analysis</h2>
@@ -738,7 +748,7 @@ cluster<span class="op">::</span><span class="kw">diana</span>(X_dist)          
 <span class="st">  z ~ x + q</span>
 <span class="st">&quot;</span>
 
-result =<span class="st"> </span><span class="kw">sem</span>(model)
+result =<span class="st"> </span>lavaan<span class="op">::</span><span class="kw">sem</span>(model)
 <span class="kw">summary</span>(result, <span class="dt">standardized=</span><span class="ot">TRUE</span>)  <span class="co"># result with standardized effects</span></code></pre></div>
 </div>
 <div id="confirmatory-factor-analysis" class="section level2">
@@ -787,13 +797,13 @@ result =<span class="st"> </span><span class="kw">cfa</span>(model)
 <h2>SEM analysis list of packages</h2>
 <ul>
 <li><span class="pack">lavaan</span> 93%</li>
-<li><span class="pack">lavaan.survey</span> 14%</li>
+<li><span class="pack">lavaan.survey</span> 80%</li>
 <li><span class="pack">blavaan</span> 20%</li>
 <li><span class="pack">lavaanPlot</span> 18%</li>
 <li><span class="pack">semTools</span> 89%</li>
 <li><span class="pack">regsem</span> 19%</li>
 <li><span class="pack">mediation</span> 86%</li>
-<li><span class="pack">piecwiseSEM</span> 14%</li>
+<li><span class="pack">piecewiseSEM</span> 59%</li>
 <li><span class="pack">MplusAutomation</span> 77%</li>
 <li><span class="pack">lava</span> 97%</li>
 <li><span class="pack">OpenMx</span> 92%</li>
@@ -804,34 +814,143 @@ result =<span class="st"> </span><span class="kw">cfa</span>(model)
 <h2>SEM recommended reading</h2>
 <p><a href="https://www.rdocumentation.org/taskviews#Psychometrics">Psychometrics Task View</a></p>
 <p>My doc on SEM covers a lot of ground and provides more extensive examples.</p>
-<p><span class="citation">Kline (<a href="#ref-kline2015principles">2015</a>)</span> is a very popular applied treatment. See the classic <span class="citation">(<span class="citeproc-not-found" data-reference-id="bollen1989"><strong>???</strong></span>)</span> for more details regarding standard models.</p>
+<p><span class="citation">Kline (<a href="#ref-kline2015principles">2015</a>)</span> is a very popular applied treatment. See the classic <span class="citation">Bollen (<a href="#ref-bollen1989">1989</a>)</span> for more details regarding standard models.</p>
 </div>
 </div>
 <div id="graphical-models" class="section level1">
 <h1>Graphical models</h1>
+<p>SEM can be seen as a very large subset of what are generally called <span class="emph">graphical models</span>, where variables are represented by <span class="emph">nodes</span> (sometimes called vertices) and the relations among them are represented by <span class="emph"></span> (sometimes called arcs). Edges may be <span class="emph">directed</span> (i.e. have arrows) or <span class="emph">undirected</span>. With directed (acyclic) graphs (DAG), we get into things like causal modeling, SEM, bayesian networks, etc. With undirected graphs, often called a Markov random fields, applications are in network models, spatial analysis, and more.</p>
+<p>In most cases there are two main approaches to running such models. One is where two data sets are provided, one which specifies the nodes and various attributes associated with them. In addition, one has an edge list or data frame that specifies the nodes from which a connection begins, the nodes to which they connect, and possibly a column specifying the value/weight for the connection. The other approach regards an <span class="emph">adjacency matrix</span>, which is like a correlation or (inverse) distance matrix, where the off-diagonal values specify connections among the nodes, and may be simply binary or comprise continuous <span class="emph">weights</span>.</p>
+<p>One of the more popular and powerful packages is <span class="pack">igraph</span>, and even when you’re using others, they are often using it under the hood. Given the right data, one can create a graph object, and then get any number of statistics, visualize it, or whatever. A lot of it is for the creation of graphs, but normally graphs are too big to do by hand and/or you’d have the data already, and it’d be easier to create an adjacency matrix from your typical data frame and work from there.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">g =<span class="st"> </span>igraph<span class="op">::</span><span class="kw">from_adjacency</span>(adjmat)      <span class="co"># create graph from adjacency matrix</span>
+g =<span class="st"> </span><span class="kw">from_data_frame</span>(df)                 <span class="co"># create graph from a data frame</span>
+<span class="kw">as_adjacency_matrix</span>(g)                  <span class="co"># convert graph to adjacency</span>
+<span class="kw">plot</span>(g)                                 <span class="co"># plot it</span>
+<span class="kw">degree</span>(g)                               <span class="co"># degree for each node</span>
+<span class="kw">hub_score</span>(g)                            <span class="co"># hub score for each node</span>
+<span class="kw">count_triangles</span>(g)                      <span class="co"># N triangles for each node</span>
+clusters =<span class="st"> </span><span class="kw">cluster_edge_betweenness</span>(g)  <span class="co"># detect clusters</span>
+<span class="kw">membership</span>(clusters)
+<span class="kw">communities</span>(clusters)
+<span class="kw">write_graph</span>(g, <span class="st">'g.dot'</span>)                 <span class="co"># write graph to e.g. dot format</span></code></pre></div>
+<p>The basic plot functionality for <span class="pack">igraph</span> is… basic. It’s not worth your time to make it pretty. To that end I suggest packages like <span class="pack">networkd3</span>, <span class="pack">visNetwork</span>, and <span class="pack">Diagrammer.</span> It’s not too big a deal to convert the graph object to something they will use (<span class="pack">visNetwork</span> will even work with an igraph object, e.g. with <span class="func">toVisNetworkData</span>).</p>
+<div id="bayesian-networks" class="section level3">
+<h3>Bayesian networks</h3>
+<p>A package that’s useful for <span class="emph">bayesian networks</span>, or probabilistic DAG, is <span class="pack">bnlearn.</span> In this case we are looking for a graphical structure based on the data we have. The package allows for model fitting such that you could essentially duplicate a path analysis SEM-style, but the strength is in the model search and selection via a variety algorithms, possibly with cross-validation. It can work with binary, continuous, or a mix of variables. With blacklists and whitelists, one can impose theoretical structure on the search such that some connections are always present while others are forbidden.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model =<span class="st"> </span>bnlearn<span class="op">::</span><span class="kw">gs</span>(X, <span class="dt">blacklist =</span> bl)   <span class="co"># grow-shrink algorithm with a blacklist</span>
+<span class="kw">plot</span>(model)</code></pre></div>
+</div>
+<div id="network-analysis" class="section level3">
+<h3>Network analysis</h3>
+<p><span class="emph">Network analysis</span> employs graphical models to study things like social or other specific types of networks. Two primary packages are <span class="pack">network</span>, which like <span class="pack">igraph</span>, serves as a foundation package, and <span class="pack">sna.</span> The primary object is a network class object instead of a graph object like with <span class="pack">igraph</span>, but you more or less proceed similarly.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">g =<span class="st"> </span>network<span class="op">::</span><span class="kw">network</span>(adj_mat, <span class="dt">directed=</span><span class="ot">FALSE</span>)   <span class="co"># undirected network based on adjacency matrix</span>
+sna<span class="op">::</span><span class="kw">summary</span>(g)                                 <span class="co"># use sna for the rest</span>
+<span class="kw">plot</span>(g)
+<span class="kw">betweenness</span>(g)                                  <span class="co"># various network statistics</span>
+<span class="kw">degree</span>(g)
+<span class="kw">efficiency</span>(g)
+model =<span class="st"> </span>ergm<span class="op">::</span><span class="kw">ergm</span>(g <span class="op">~</span><span class="st"> </span>edges)                   <span class="co"># exponential random graph model</span></code></pre></div>
+<p>With <span class="pack">sna</span> you may have some specific statistics not found in <span class="pack">igraph</span>, but it’s not really an either or, as you can easily move between the two. As with <span class="pack">igraph</span>, you’ll probably want to use a different package for visualization. While <span class="pack">sna</span> has some modeling capabilities, you might also consider <span class="pack">ergm</span> for exponential random graph models.</p>
+</div>
+<div id="graphical-models-list-of-packages" class="section level2">
+<h2>Graphical models list of packages</h2>
+<ul>
+<li><span class="pack">igraph</span> 97%</li>
+<li><span class="pack">bnlearn</span> 84%</li>
+<li><span class="pack">network</span> 95%</li>
+<li><span class="pack">sna</span> 93%</li>
+<li><span class="pack">ergm</span> 88%</li>
+<li><span class="pack">networkd3</span> 89%</li>
+<li><span class="pack">visNetwork</span> 94%</li>
+<li><span class="pack">Diagrammer</span> 93%</li>
+</ul>
+</div>
+<div id="graphical-models-recommended-reading" class="section level2">
+<h2>Graphical models recommended reading</h2>
 <p><a href="https://www.rdocumentation.org/taskviews#gR">Graphical Model Task View</a></p>
-<p>ggm bnlearn network sna</p>
-<p>igraph networkd3 visnetwork Diagrammer</p>
+<p><span class="citation">Pearl (<a href="#ref-pearl2009causality">2009</a>)</span> Also, he has every article available on <a href="http://bayes.cs.ucla.edu/jp_home.html">his website</a>.</p>
+<p>There are several UseR! series entries for graphical models and network analysis.</p>
+<ul>
+<li><span class="citation">Højsgaard, Edwards, and Lauritzen (<a href="#ref-hojsgaard2012graphical">2012</a>)</span></li>
+<li><span class="citation">Luke (<a href="#ref-luke2015network">2015</a>)</span></li>
+<li><span class="citation">Kolaczyk and Csárdi (<a href="#ref-kolaczyk2014network">2014</a>)</span></li>
+<li><span class="citation">Nagarajan, Scutari, and Lèbre (<a href="#ref-nagarajan2013bnetwork">2013</a>)</span></li>
+</ul>
+</div>
 </div>
 <div id="time-series" class="section level1">
 <h1>Time series</h1>
+<p>With time series data, there isn’t really a specific model of concern, and in general, many models you might want to run can’t do anything special with a time-series class object. For example, for a specific situation with observations over time, one could run a mixed model, a GAM, a gaussian process model, an ARIMA model, hidden markov model, or a recurrent neural network. However, there is concern about how to deal with the data itself even for basic processing and visualization.</p>
+<p>To begin, note that there is a lot in the base R installation for dealing with time-based objects.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">acf</span>(Series)              <span class="co"># autocorrelation plot</span>
+<span class="kw">lag</span>(Series, <span class="dv">1</span>)           <span class="co"># can be used in a formula</span>
+<span class="kw">diff</span>(Series, <span class="dt">lag =</span> <span class="dv">2</span>)    <span class="co"># take differences</span>
+<span class="kw">fft</span>(Series)              <span class="co"># fast fourier transform</span>
+
+
+Series.ts =<span class="st"> </span><span class="kw">as.ts</span>(Series)
+<span class="kw">plot</span>(Series.ts)
+<span class="kw">frequency</span>(Series.ts)</code></pre></div>
+<p>A couple very useful packages that make dealing with time and dates are <span class="pack">xts</span>, <span class="pack">zoo</span>, and <span class="pack">lubridate</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">xts<span class="op">::</span><span class="kw">as.xts</span>(Series)
+<span class="kw">apply.monthly</span>(Series, somefunction)  <span class="co"># apply a function at a specific period</span>
+
+zoo<span class="op">::</span><span class="kw">window</span>(Series)
+
+lubridate<span class="op">::</span><span class="kw">as_date</span>(myDates)
+<span class="kw">ymd</span>(myDates)                <span class="co"># convert to YYYY-MM-DD format</span>
+<span class="kw">hour</span>(myDates)               <span class="co"># Extract hours</span></code></pre></div>
+<p>For modeling, again that depends on many things and may just be one of many models already demonstrated. I’ll mention <span class="pack">forecast</span> as a means to get started with traditional models like auto-regressive moving average and state-space models (with tidy piping functionality), and <span class="pack">prophet</span>, an offering by Facebook that uses Stan (see Bayesian section).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">forecast<span class="op">::</span><span class="kw">auto.arima</span>(Series) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">plot</span>()
+
+<span class="co"># Series.df is a data.frame with two columns of date ('ds') and value ('y')</span>
+m =<span class="st"> </span>prophet<span class="op">::</span><span class="kw">prophet</span>(Series.df, <span class="dt">growth =</span> <span class="st">'linear'</span>, <span class="dt">n.changepoints =</span> <span class="dv">1</span>)
+m<span class="op">$</span>changepoints                                 <span class="co"># date of estimated changepoint</span>
+forecast =<span class="st"> </span><span class="kw">predict</span>(m, Series.df)
+<span class="kw">plot</span>(m, <span class="dt">fcst=</span>forecast)</code></pre></div>
+<p>The following demonstrates an additive mixed model with a cyclic spline for the trend, and which models the residuals with an autoregressive structure.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mgcv<span class="op">::</span><span class="kw">gamm</span>(y <span class="op">~</span><span class="st"> </span><span class="kw">s</span>(time, <span class="dt">bs=</span><span class="st">'cc'</span>), <span class="dt">correlation =</span> <span class="kw">corAR1</span>())</code></pre></div>
+<p>Again the main thing is just to know that tools are available to help process time series, but models may not require it. The <span class="pack">prophet</span> package expects a date object, whereas <span class="pack">mgcv</span> did not.</p>
+<div id="time-series-list-of-packages" class="section level2">
+<h2>Time series list of packages</h2>
+<ul>
+<li><span class="pack">xts</span> 98%</li>
+<li><span class="pack">zoo</span> 98%</li>
+<li><span class="pack">forecast</span> 96%</li>
+<li><span class="pack">prophet</span> 84%</li>
+<li><span class="pack">lubridate</span> 98%</li>
+</ul>
+</div>
+<div id="time-series-recommended-reading" class="section level2">
+<h2>Time series recommended reading</h2>
 <p><a href="https://www.rdocumentation.org/taskviews#TimeSeries">Time Series Task View</a></p>
-<p>xts, forecast, prophet, lubridate, tseries, arima</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">acf
-lag
-posix
-<span class="kw">as.Date</span>()</code></pre></div>
+</div>
 </div>
 <div id="spatial-models" class="section level1">
 <h1>Spatial models</h1>
-<p><a href="https://www.rdocumentation.org/taskviews#Spatial">Spatial Task View</a> <a href="https://www.rdocumentation.org/taskviews#SpatioTemporal">SpatialTemporal Task View</a></p>
+<div id="list-of-packages" class="section level2">
+<h2>list of packages</h2>
 <p>spatial sf sp spdep mgcv ggmap leaflet plotly</p>
+</div>
+<div id="recommended-reading" class="section level2">
+<h2>recommended reading</h2>
+<p><a href="https://www.rdocumentation.org/taskviews#Spatial">Spatial Task View</a> <a href="https://www.rdocumentation.org/taskviews#SpatioTemporal">SpatialTemporal Task View</a></p>
+</div>
 </div>
 <div id="machine-learning" class="section level1">
 <h1>Machine learning</h1>
 <p>You can find detailed examples in my document <a href="https://m-clark.github.io/introduction-to-machine-learning">here</a>.</p>
 <p><a href="https://www.rdocumentation.org/taskviews#MachineLearning">Machine Learning Task View</a></p>
 <p>e1071 caret mlr glmnet randomForest gbm xgboost lime</p>
+<div id="list-of-packages-1" class="section level2">
+<h2>list of packages</h2>
+</div>
+<div id="recommended-reading-1" class="section level2">
+<h2>recommended reading</h2>
+<p><span class="citation">Hastie, Tibshirani, and Friedman (<a href="#ref-hastie_elements_2009">2009</a>)</span> freely available <a href="https://web.stanford.edu/~hastie/ElemStatLearn/">here</a></p>
+<p><span class="citation">Efron and Hastie (<a href="#ref-efron2016computer">2016</a>)</span></p>
+<p><span class="citation">Murphy (<a href="#ref-murphy_machine_2012">2012</a>)</span></p>
+</div>
 </div>
 <div id="bayesian" class="section level1">
 <h1>Bayesian</h1>
@@ -843,7 +962,13 @@ posix
 </div>
 <div id="other" class="section level2">
 <h2>Other</h2>
-<p>greta</p>
+<p>greta tidybayes</p>
+</div>
+<div id="list-of-packages-2" class="section level2">
+<h2>list of packages</h2>
+</div>
+<div id="recommended-reading-2" class="section level2">
+<h2>recommended reading</h2>
 </div>
 </div>
 <div id="text" class="section level1">
@@ -852,13 +977,23 @@ posix
 <p><a href="https://www.rdocumentation.org/taskviews#NaturalLanguageProcessing">Task View</a></p>
 <p>tidytext text2vec stringdist</p>
 <p>tm lda topicmodels keras</p>
+<div id="list-of-packages-3" class="section level2">
+<h2>list of packages</h2>
+</div>
+<div id="recommended-reading-3" class="section level2">
+<h2>recommended reading</h2>
+</div>
+</div>
+<div id="censored-truncated-and-related" class="section level1">
+<h1>Censored, truncated, and related</h1>
+<p>glm.nb, glmer.nb survival pscl VGAM, gamlss</p>
 </div>
 <div id="discipline-specific" class="section level1">
 <h1>Discipline specific</h1>
 <p>Probably should avoid</p>
 <div id="ecological" class="section level2">
 <h2>Ecological</h2>
-<p><a href="https://www.rdocumentation.org/taskviews#Environmetrics">Task View</a> vegan</p>
+<p><a href="https://www.rdocumentation.org/taskviews#Environmetrics">Task View</a> vegan Zuur et al.</p>
 </div>
 <div id="financial" class="section level2">
 <h2>Financial</h2>
@@ -872,6 +1007,12 @@ posix
 <div id="references" class="section level1 unnumbered">
 <h1>References</h1>
 <div id="refs" class="references">
+<div id="ref-bollen1989">
+<p>Bollen, Kenneth. 1989. “Structural Equations with Latent Variables.” <em>New York: Wiley</em>.</p>
+</div>
+<div id="ref-efron2016computer">
+<p>Efron, Bradley, and Trevor Hastie. 2016. <em>Computer Age Statistical Inference</em>. Vol. 5. Cambridge University Press.</p>
+</div>
 <div id="ref-everitt2011cluster">
 <p>Everitt, Brian S., Sabine Landau, Leese Morven, and Daniel Stahl. 2011. <em>Cluster Analysis</em>. 5th ed. John Wiley &amp; Sons.</p>
 </div>
@@ -881,14 +1022,44 @@ posix
 <div id="ref-gelman_arm">
 <p>Gelman, Andrew, and Jennifer Hill. 2006. <em>Data Analysis Using Regression and Multilevel/Hierarchical Models</em>. Cambridge University Press.</p>
 </div>
+<div id="ref-hardin_generalized_2012">
+<p>Hardin, James W., and Joseph M. Hilbe. 2012. <em>Generalized Linear Models and Extensions, Third Edition</em>. Stata Press.</p>
+</div>
 <div id="ref-harrell2015">
 <p>Harrell, Frank E. 2015. <em>Regression Modeling Strategies</em>. 2nd ed. Springer.</p>
+</div>
+<div id="ref-hastie_elements_2009">
+<p>Hastie, Trevor, Robert Tibshirani, and Jerome Friedman. 2009. <em>The Elements of Statistical Learning: Data Mining, Inference, and Prediction, Second Edition</em>. 2nd ed. 2009. Corr. 3rd printing 5th Printing. Springer.</p>
+</div>
+<div id="ref-heeringa2017applied">
+<p>Heeringa, Steven G, Brady T West, and Patricia A Berglund. 2017. <em>Applied Survey Data Analysis</em>. Chapman; Hall/CRC.</p>
+</div>
+<div id="ref-hojsgaard2012graphical">
+<p>Højsgaard, Søren, David Edwards, and Steffen Lauritzen. 2012. <em>Graphical Models with R</em>. Springer Science &amp; Business Media.</p>
 </div>
 <div id="ref-kline2015principles">
 <p>Kline, Rex B. 2015. <em>Principles and Practice of Structural Equation Modeling</em>. Guilford publications.</p>
 </div>
+<div id="ref-kolaczyk2014network">
+<p>Kolaczyk, Eric D, and Gábor Csárdi. 2014. <em>Statistical Analysis of Network Data with R</em>. Vol. 65. Springer.</p>
+</div>
+<div id="ref-luke2015network">
+<p>Luke, Douglas A. 2015. <em>A User’s Guide to Network Analysis in R</em>. Springer.</p>
+</div>
 <div id="ref-lumley2011complex">
 <p>Lumley, Thomas. 2011. <em>Complex Surveys: A Guide to Analysis Using R</em>. Vol. 565. John Wiley &amp; Sons.</p>
+</div>
+<div id="ref-murphy_machine_2012">
+<p>Murphy, Kevin P. 2012. <em>Machine Learning: A Probabilistic Perspective</em>. The MIT Press.</p>
+</div>
+<div id="ref-nagarajan2013bnetwork">
+<p>Nagarajan, Radhakrishnan, Marco Scutari, and Sophie Lèbre. 2013. “Bayesian Networks in R.” <em>Springer</em> 122. Springer: 125–27.</p>
+</div>
+<div id="ref-pearl2009causality">
+<p>Pearl, Judea. 2009. <em>Causality</em>. Cambridge university press.</p>
+</div>
+<div id="ref-west2014linear">
+<p>West, Brady T, Kathleen B Welch, and Andrzej T Galecki. 2014. <em>Linear Mixed Models: A Practical Guide Using Statistical Software</em>. CRC Press.</p>
 </div>
 <div id="ref-wood_generalized_2017">
 <p>Wood, Simon N. 2017. <em>Generalized Additive Models: An Introduction with R</em>. 2nd ed. CRC press.</p>

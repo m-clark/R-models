@@ -11,7 +11,7 @@ output:
     df_print: kable
     fig_caption: yes
     highlight: pygments
-    theme: sandstone
+    # theme: sandstone
     toc: true
     toc_depth: 2
     toc_float:
@@ -86,7 +86,7 @@ What this won't provide:
 - visualization
 - a list of every package that *might* be useful
 
-For some content I will provide recommended reading.  These are texts are mostly those I've benefitted from or I would think would be useful to others, especially those just starting out with analysis and/or at an intermediate stage.  They are not meant to be a list seminal works on the subject, though some might be.
+For some content I will provide recommended reading.  These are texts are mostly those I've benefitted from or I would think would be useful to others, especially those just starting out with analysis, at an intermediate stage, or even coming to R from another language.  They are not meant to be a list seminal works on the subject, though some might be.
 
 
 Color coding:
@@ -452,6 +452,8 @@ ordinal_perc = get_perc('ordinal')
 
 @west2014linear
 
+I have a document [here](https://m-clark.github.io/generalized-additive-models/).
+
 # Additive models
 
 <span class="emph">Generalized additive models</span> incorporate nonlinear, random, and spatial effects all under one roof.  One of the most powerful modeling packages in the R universe, the excellently named Mixed-GAM Computational Vehicle (<span class="pack">mgcv</span>), focuses on these, and even comes with the standard R installation!  
@@ -565,6 +567,8 @@ splines_perc = get_perc('splines')
 - <span class="pack">splines</span>  `r splines_perc`%
 
 ## GAM recommended reading
+
+Feel free to peruse [my document](https://m-clark.github.io/generalized-additive-models/).
 
 @wood_generalized_2017
 
@@ -1095,7 +1099,7 @@ There are several UseR! series entries for graphical models and network analysis
 
 # Time series
 
-With time series data, there isn't really a specific model of concern.  For example, for a specific situation with observations over time, one could run a mixed model, a GAM, a gaussian process model, an ARIMA model, hidden markov model, or a recurrent neural network.  However, there is concern about how to deal with the data itself even for basic processing and visualization.
+With time series data, there isn't really a specific model of concern, and in general, many models you might want to run can't do anything special with a time-series class object.  For example, for a specific situation with observations over time, one could run a mixed model, a GAM, a gaussian process model, an ARIMA model, hidden markov model, or a recurrent neural network.  However, there is concern about how to deal with the data itself even for basic processing and visualization.
 
 To begin, note that there is a lot in the base R installation for dealing with time-based objects.
 
@@ -1111,7 +1115,7 @@ plot(Series.ts)
 frequency(Series.ts)
 ```
 
-A couple very useful packages that make dealing with time and dates are xts, zoo, and lubridate.
+A couple very useful packages that make dealing with time and dates are <span class="pack">xts</span>, <span class="pack">zoo</span>, and <span class="pack">lubridate</span>.
 
 ```{r ts_lubridate}
 xts::as.xts(Series)
@@ -1124,22 +1128,44 @@ ymd(myDates)                # convert to YYYY-MM-DD format
 hour(myDates)               # Extract hours
 ```
 
-For modeling, again that depends on many things and may just be one of many models already demonstrated.  I'll mention forecast as a means to get started with traditional models like auto-regressive moving average and state-space models (with tidy piping functionality), and prophet, an offering by Facebook that uses Stan (see Bayesian section).
+For modeling, again that depends on many things and may just be one of many models already demonstrated.  I'll mention <span class="pack">forecast</span> as a means to get started with traditional models like auto-regressive moving average and state-space models (with tidy piping functionality), and <span class="pack">prophet</span>, an offering by Facebook that uses Stan (see Bayesian section).
 
 ```{r ts_models}
 forecast::auto.arima(Series) %>% plot()
 
 # Series.df is a data.frame with two columns of date ('ds') and value ('y')
-m = prophet::prophet(Series.df, growth = 'linear', n.changepoints = 1)
-m$changepoints                                 # date of estimated changepoint
-forecast = predict(m, Series.df)
-plot(m, fcst=forecast)
+model = prophet::prophet(Series.df, growth = 'linear', n.changepoints = 1)
+model$changepoints                                 # date of estimated changepoint
+forecast = predict(model, Series.df)
+plot(model, fcst=forecast)
 ```
+
+The following demonstrates an additive mixed model with a cyclic spline for the trend, and which models the residuals with an autoregressive structure.
+
+```{r ts_gam}
+mgcv::gamm(y ~ s(time, bs='cc'), correlation = corAR1())
+```
+
+Again the main thing is just to know that tools are available to help process time series, but models may not require it.  The <span class="pack">prophet</span> package expects a date object, whereas <span class="pack">mgcv</span> did not.
+
 
 
 ## Time series list of packages
 
-xts, zoo, forecast, prophet, lubridate
+```{r ts_percs, eval=TRUE, echo=FALSE}
+xts_perc = get_perc('xts')
+zoo_perc = get_perc('zoo')
+forecast_perc = get_perc('forecast')
+prophet_perc = get_perc('prophet')
+lubridate_perc = get_perc('lubridate')
+```
+
+
+- <span class="pack">xts</span> `r xts_perc`%
+- <span class="pack">zoo</span> `r zoo_perc`%
+- <span class="pack">forecast</span> `r forecast_perc`%
+- <span class="pack">prophet</span> `r prophet_perc`%
+- <span class="pack">lubridate</span> `r lubridate_perc`%
 
 
 ## Time series recommended reading
@@ -1187,6 +1213,8 @@ lime
 
 
 @hastie_elements_2009  freely available [here](https://web.stanford.edu/~hastie/ElemStatLearn/)
+
+@james2013introduction
 
 @efron2016computer
 
@@ -1271,4 +1299,4 @@ caret zelig recipes tm? sjstats car
 
 [^lgc]: Using a mixed model on longitudinal data with <span class="pack">flexmix</span> negates the need to use SEM for what are sometimes called <span class="emph">Latent Class Growth Curve Models</span>, <span class="emph">Growth Mixture Models</span> or <span class="emph">Latent Trajectory Models</span>.  If you need indirect effects, you'll have to use Mplus or similar, and good luck with that.
 
-[^lavlack]: Currently lavaan lacks the incorporation of categorical latent variables (i.e. mixture models), but you have more functionality in R for those elsewhere than you would Mplus. The current lavaan also lacks multilevel SEM, but that is a pretty rare model.  There are very minor other differences.
+[^lavlack]: Currently <span class="pack">lavaan</span> lacks the incorporation of categorical latent variables (i.e. mixture models), but you have more functionality in R for those elsewhere than you would Mplus. The current <span class="pack">lavaan</span>  also lacks multilevel SEM, but that is a pretty rare model.  There are very minor other differences.
