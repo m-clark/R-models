@@ -72,6 +72,7 @@ This is a quick reference for the modeling syntax and associated packages.  Whil
 
 Preference is given to base R functionality or what are perceived as very commonly used packages.  'Very common' is based on my own knowledge consulting across dozens of disciplines along with just regularly following the R community, and things like the rankings at [RDocumentation.org](https://rdocumentation.org), and packages listed in [CRAN Task Views](https://www.rdocumentation.org/taskviews).
 
+In what follows, you will not see any model which I have not run on my own, if not many, many times. Like a yuge amount. Seriously.
 
 #### Miscellaneous
 
@@ -98,7 +99,7 @@ Color coding:
 - <span class="func">function</span>
 - <span class="objclass">object/class</span>
 
-When you see `pack::func` the first value is the package name and the second the function.  I show this for the first time to make clear what package is used, but otherwise it is assumed you've loaded the necessary package (`library(mypackage)`).
+When you see `pack::func` the first value is the package name and the second the function.  I show this for the first time to make clear what package is used, but otherwise it is assumed you've loaded the necessary package (`library(pack)`).
 
 
 # Basics
@@ -1193,13 +1194,22 @@ edges = sp_depgraph$edge_df %>%
   rename(from=source,
          to=target)
 
-edge_trim = edges %>% 
-  filter(to == 0)
-visNetwork(nodes = nodes %>% 
-             filter(id %in% c(0, edge_trim$from)) %>% 
-             mutate(value=c(100, rep(0, nrow(.)-1))), 
-           edges=edge_trim) %>% 
-  visEdges(color=list(opacity=.10))
+listed_packs = c('sf', 'maps', 'maptools', 'spdep', 'mapview', 'ggplot2', 'leaflet', 'spacetime', 'ggmap', 'rgeos')
+edges_trim = edges %>% 
+  filter(to == 0) %>% 
+  mutate(value = if_else(from %in% nodes$id[nodes$label %in% listed_packs], 30L, value),
+         length = if_else(from %in% nodes$id[nodes$label %in% listed_packs], 0, 250))
+
+nodes_trim = nodes %>% 
+  filter(id %in% c(0, edge_trim$from)) %>% 
+  mutate(value=c(100, rep(0, nrow(.)-1)),
+         value = if_else(label %in% listed_packs, 30, value))
+  
+visNetwork(nodes = nodes_trim, 
+             edges=edges_trim) %>% 
+  visEdges(color=list(opacity=.10),
+           # length = c(200,10),
+           physics = T)
 ```
 
 
@@ -1281,9 +1291,10 @@ rgdal_perc = get_perc('rgdal')
 
 # Machine learning
 
-You can find detailed examples in my document [here](https://m-clark.github.io/introduction-to-machine-learning).
 
-[Machine Learning Task View](https://www.rdocumentation.org/taskviews#MachineLearning)
+
+
+## list of packages
 
 e1071
 caret
@@ -1294,8 +1305,9 @@ gbm
 xgboost
 lime
 
-## list of packages
 ## recommended reading
+
+[Machine Learning Task View](https://www.rdocumentation.org/taskviews#MachineLearning)
 
 
 @hastie_elements_2009  freely available [here](https://web.stanford.edu/~hastie/ElemStatLearn/)
@@ -1305,6 +1317,8 @@ lime
 @efron2016computer
 
 @murphy_machine_2012
+
+You can find detailed examples in my document [here](https://m-clark.github.io/introduction-to-machine-learning).
 
 
 # Bayesian
@@ -1378,6 +1392,9 @@ Probably not enough to (consistently) do much here.
 
 caret zelig recipes tm? sjstats car
 
+# Misc to do
+
+add broom at beginning
 
 # References
 
