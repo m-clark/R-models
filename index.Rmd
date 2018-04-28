@@ -64,7 +64,7 @@ get_depgraph = function(pack) {
 }
 ```
 
-THIS DOCUMENT IS A WORK IN PROGRESS. IT IS CURRENTLY NOT EVEN HALF-WAY THROUGH.
+THIS DOCUMENT IS A WORK IN PROGRESS. IT IS CURRENTLY NOT COMPLETE.
 
 # Introduction
 
@@ -72,13 +72,13 @@ This is a quick reference for the modeling syntax and associated packages.  Whil
 
 Preference is given to base R functionality or what are perceived as very commonly used packages.  'Very common' is based on my own knowledge consulting across dozens of disciplines along with just regularly following the R community, and things like the rankings at [RDocumentation.org](https://rdocumentation.org), and packages listed in [CRAN Task Views](https://www.rdocumentation.org/taskviews).
 
-In what follows, you will not see any model which I have not run on my own, if not many, many times. Like a yuge amount. Seriously.
+
 
 #### Miscellaneous
 
-I will ignore the data argument in every example that uses the typical R formula approach. It is implied that you would supply it. 
+In what follows, you will not see any model which I have not run on my own, if not many, many times. For those who want to get more into the implementation of many of these models, I have raw R code that demonstrates many (probably most) of the techniques discussed [here](https://github.com/m-clark/Miscellaneous-R-Code).
 
-For those who want to get more into the implementation of many of these models, I have raw R code that demonstrates many (probably most) of the techniques discussed [here](https://github.com/m-clark/Miscellaneous-R-Code).
+I will ignore the data argument in every example that uses the typical R formula approach. It is implied that you would supply it. 
 
 What this won't provide:
 
@@ -680,6 +680,16 @@ survey_perc = get_perc('survey')
 
 @heeringa2017applied
 
+# Censored, truncated, and related
+
+glm.nb, glmer.nb
+survival
+pscl
+VGAM, gamlss
+
+
+
+
 # Principal components & Factor analysis
 
 A lot of techniques fall under the heading of 'dimension reduction', 'factor analysis', or 'matrix factorization' techniques.  
@@ -1217,7 +1227,7 @@ visNetwork(nodes = nodes_trim,
 A lot of <span class="pack">sp</span>, and its corresponding UseR book, is geared toward creating a map from scratch, which is great, but often rarely needed, as typically one already has map data, e.g. in the form of shape files, and wants to simply import and then model or visualize it.  It also uses lattice and base R for visualization, and is inordinately slow to visualize its products.   While sp has been around for a long time, the newer <span class="pack">sf</span> ([simple features](https://en.wikipedia.org/wiki/Simple_Features)) package will eventually supercede it (or at least that's the plan), so I'll give a quick example.
 
 ```{r spatial_sf}
-map_obj = sf::st_read(system.file("shape/nc.shp", package="sf"))
+map_obj = sf::st_read("Shapefile.shp")
 plot(map_obj)
 head(map_obj)         # spatial data.frame
 
@@ -1226,7 +1236,7 @@ ggplot2::ggplot() + geom_sf(data = world1)                        # plot with gg
 ```
 
 
-The spdep package can serve as a first step to spatial modeling, providing common spatial descriptive tests and models.  However, functionality may be available in other packages that does not require specific spatial data structures.
+The <span class="pack">spdep</span> package can serve as a first step to spatial modeling, providing common spatial descriptive tests and models.  However, functionality may be available in other packages that does not require specific spatial data structures.
 
 ```{r spatial_spdep}
 nb = spdep::nb2listw(nb_object, style="W")             # create a weigthed neighbor list
@@ -1291,24 +1301,74 @@ rgdal_perc = get_perc('rgdal')
 
 # Machine learning
 
+Machine learning is more of an approach than a specific set of analysis techniques, though one will find models they won't see in traditional statistical modeling.  For practical purposes, your approach will involve measuring performance on a test (validation, hold-out) set of data rather than the data you fit the model on.
+
+Two packages are very popular in this realm, <span class="pack">caret</span> and <span class="pack">mlr</span>, but they work similarly because again, ML is more of a conceptual approach than a technique. We'll demonstrate both on a classification task with a random forest.  
 
 
+```{r ml_caret}
+ind = caret::createDataPartition(y, p = .8)      # index to create a training and test set
+cv_opts = trainControl(method='cv', number=10)   # 10-fold cross validation
 
-## list of packages
+# random forest with various options
+model_train  = train(X_train, y_train, 
+                     method = 'rf', 
+                     tuneLength=5, 
+                     trControl = cv_opts,
+                     preProcess = c("center", "scale"))  
 
-e1071
-caret
-mlr
-glmnet
-randomForest
-gbm
-xgboost
-lime
+preds_rf = predict(model_train, X_test)           # predictions
+confusionMatrix(preds_rf, y_test)                 # classification results
+```
+
+If you use caret for nothing else, the <span class="func">confusionMatrix</span> function is very handy for any classification model.
+
+Here is a similar approach using <span class="pack">mlr.</span>
+
+```{r ml_mlr}
+task = mlr::makeClassifTask(data = X, target = "y")   # X is a data.frame with all variables
+
+n = nrow(X)
+train.set = sample(n, size = .8*n)                    # indices for training data
+test.set = setdiff(1:n, train.set)                    # indices for test data
+
+lrn = makeLearner("classif.randomForest")
+
+model = train(lrn, task, subset = train.set)
+
+preds_rf = predict(model, task = task, subset = test.set)
+
+calculateConfusionMatrix(preds_rf, relative = T)
+```
+
+Both packages offer a very wide variety of ways to tune and customize your approach, and offer literally hundreds of models between them.  Some other packages that offer some specific models (accessible by <span class="pack">caret</span> or <span class="pack">mlr</span> if desired) that one might want to be aware of are <span class="pack">e1071</span>, <span class="pack">glmnet</span>, <span class="pack">randomForest</span>, and <span class="pack">xgboost</span>.  For understanding such models, consider <span class="pack">lime</span>.
+
+
+## Machine Learning list of packages
+
+```{r ml_percs, eval=TRUE, echo=FALSE}
+caret_perc = get_perc('caret')
+mlr_perc = get_perc('mlr')
+e1071_perc = get_perc('e1071')
+glmnet_perc = get_perc('glmnet')
+randomForest_perc = get_perc('randomForest')
+xgboost_perc = get_perc('xgboost')
+lime_perc = get_perc('lime')
+```
+
+
+- <span class="pack">caret</span> `r caret_perc`%
+- <span class="pack">mlr</span> `r mlr_perc`%
+- <span class="pack">e1071</span> `r e1071_perc`%
+- <span class="pack">glmnet</span> `r glmnet_perc`%
+- <span class="pack">randomForest</span> `r randomForest_perc`%
+- <span class="pack">xgboost</span> `r xgboost_perc`%
+- <span class="pack">lime</span> `r lime_perc`%
+
 
 ## recommended reading
 
 [Machine Learning Task View](https://www.rdocumentation.org/taskviews#MachineLearning)
-
 
 @hastie_elements_2009  freely available [here](https://web.stanford.edu/~hastie/ElemStatLearn/)
 
@@ -1317,6 +1377,8 @@ lime
 @efron2016computer
 
 @murphy_machine_2012
+
+@kuhn2013applied   Book by the caret package author
 
 You can find detailed examples in my document [here](https://m-clark.github.io/introduction-to-machine-learning).
 
@@ -1348,9 +1410,6 @@ tidybayes
 
 # Text
 
-You can find detailed examples in my document [here](https://m-clark.github.io/text-analysis-with-R).
-
-[Task View](https://www.rdocumentation.org/taskviews#NaturalLanguageProcessing)
 
 
 tidytext
@@ -1363,15 +1422,12 @@ topicmodels
 keras
 
 ## list of packages
+
 ## recommended reading
 
-# Censored, truncated, and related
+[Task View](https://www.rdocumentation.org/taskviews#NaturalLanguageProcessing)
 
-glm.nb, glmer.nb
-survival
-pscl
-VGAM, gamlss
-
+You can find detailed examples in my document [here](https://m-clark.github.io/text-analysis-with-R).
 
 
 # Discipline specific
