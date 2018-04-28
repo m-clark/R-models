@@ -87,7 +87,7 @@ What this won't provide:
 - visualization
 - a list of every package that *might* be useful
 
-For some content I will provide recommended reading.  These are texts are mostly those I've benefitted from or I would think would be useful to others, especially those just starting out with analysis, at an intermediate stage, or even coming to R from another language.  They are not meant to be a list seminal works on the subject, though some might be.
+For some content I will provide recommended reading.  These are texts are mostly those I've benefited from or I would think would be useful to others, especially those just starting out with analysis, at an intermediate stage, or even coming to R from another language.  They are not meant to be a list seminal works on the subject, though some might be.
 
 
 Color coding:
@@ -122,13 +122,22 @@ Some models may be different enough to warrant their own syntax, e.g. latent var
 Most modeling functions, again, those that actually want to be used, will provide the following commonly used methods.
 
 ```{r basics-explore}
-summary(my_model)    # may also be just print()
-fitted(my_model)     # fitted values
-residuals(my_model)  # residuals
+summary(my_model)          # may also be just print()
+fitted(my_model)           # fitted values
+residuals(my_model)        # residuals
+coef(my_model)             # extract coefficients
+model.matrix(my_model)     # extract the model matrix
 predict(my_model, newdata=other_observations, type='response')  # specific predictions
 ```
 
 Some may also have a <span class="func">plot</span> method, but this will definitely vary by package both in whether it is available and what it will do.  For example, plotting an <span class="objclass">lm</span> object will explore residuals, while plotting a <span class="objclass">gam</span> will show the component plots of the smoothed terms. Some packages, like <span class="pack">ggeffects</span>, <span class="pack">visreg</span> and <span class="pack">margins</span>, will help plotting some types of effects.  I've found it easier to do oneself via <span class="pack">ggplot2</span>, rather than hope you can finagle a plot made by a package into something you actually want.
+
+One way to prepare results for visualization and publishable tables is the <span class="pack">broom</span> package.  Its tidy function works with many very commonly used modeling packages, returning a <span class="func">tidy</span> data frame of, for example, the summary output.
+
+```{r basics-broom}
+broom::tidy(my_model)
+```
+
 
 Many packages will also have a <span class="func">confint</span> method for interval estimates of coefficients.  See the <span class="basepack">boot</span> package as a starting point for bootstrapped intervals.
 
@@ -142,9 +151,26 @@ anova(mod1, mod2)
 
 AIC(mod)
 AIC(mod1, mod2)
+
+lrtest(mod1, mod2)    # only for some packages
 ```
 
 Others will be package specific. For example, <span class="basepack">mgcv</span> will supply a GCV (generalized cross-validation) metric, and there is WAIC and loo in <span class="emph">Stan</span>-related packages for Bayesian analysis.
+
+## Optimization
+
+If you want to roll your own model, the base R installation comes with <span class="func">optim</span>, but you're probably better suited to use one of the many packages that provide more efficient[^optim] or simply better implementations of the same algorithms.  See the [Task View](https://www.rdocumentation.org/taskviews#Optimization) for starters, and know that many will work in a similar fashion as <span class="func">optim</span>.
+
+```{r optim_demo}
+model = optim(start_values, my_opt_function, method = 'BFGS', control = list(maxit=1000))
+model
+
+meths <- c("Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "nlm", "nlminb")
+
+result <- optimr::opm(start_values, my_opt_function, method=meths)
+summary(result, order=value)
+```
+
 
 # Linear models and GLM 
 
@@ -235,10 +261,43 @@ The standard GLM will only take you so far in terms of distributions for the tar
 - <span class="pack">betareg</span>, <span class="pack">dirichletReg</span>: Beta (0, 1) and Dirichlet distributions (e.g. compositional data)
 - <span class="pack">VGAM</span>, <span class="pack">mgcv</span>, <span class="pack">gamlss</span>: Additive modeling packages that come with many additional distributions (e.g. student T, bivariate logit/probit, censored normal, tweedie, multivariate gaussian, etc.)
 
+#### Censored, truncated, bounded, and related
+
+Sometimes we have a response that doesn't quite fit the mold of commonly used distributions. A common situation regards a target variable of counts, where there are an inordinately large amount of zero counts where the event of interest did not occur.  In other cases, the scale is truncated at some value, or we may simply not see scores beyond a certain point.  In general we can consider <span class="emph">zero-altered</span> models, <span class="emph">truncated</span> distributions, and <span class="emph">censored</span> regression models.
+
+Probably the most common of these situations is the zero-altered case.  A good starting point for such models is the <span class="pack">pscl</span> package. For <span class="emph">zero-inflated</span> or <span class="emph">hurdle</span> models, you'll get two sets of output, a model that regards the zeros and one that regards the target variable in general. For censored regression, I provide an example with <span class="pack">AER</span>, as there is a common contributor to that package. Note that it is just using <span class="func">survreg</span> from the <span class="pack">survival</span> package.
+
+```{r other_zero}
+model = pscl::hurdle(y ~ x + z, dist = "negbin")  # hurdle model with negative binomial response
+model = zeroinf(y ~ x + z, dist = "posi")         # zero-inflated model with negative binomial response
+summary(model)
+
+model = AER::tobit(y ~ x + z, left = 0)           # left-censored at 0 
+```
+
+For truncated distributions you likely won't have a lot of options unless you're willing to go into the Bayesian realm, but you can start with <span class="pack">VGAM</span> as a non-Bayesian option.
+
+```{r other_trunc}
+model = VGAM::vglm(y ~  x + z, truncpareto(lower, upper))  # truncated Pareto
+```
+
+Another common situation is where the data is bounded by [0,1], but isn't based on a binomial distribution, or one doesn't have access to the underlying counts if it is.  The beta distribution is a good option in this case, and the <span class="pack">betareg</span> package provides some modeling just for that. 
+
+```{r other_beta}
+model = betareg::betareg(y ~  x + z)
+```
+
+Note that many modeling packages might offer the standard beta as a distributional family though.
+
+
+
+
+
+
+
 ### Miscellaneous
 
 Some might be interested in quantile regression.  The <span class="pack">quantreg</span> package would be a starting point.  In addition, the <span class="pack">car</span> package has a few miscellaneous functions for various models, e.g. add-variable plots, variance inflation factors, influence metrics, and more.
-
 
 ## Linear models and GLM list of packages
 
@@ -503,14 +562,22 @@ edges = mgcv_depgraph$edge_df %>%
   rename(from=source,
          to=target)
 
-edge_trim = edges %>% 
-  filter(to == 0)
-visNetwork(nodes = nodes %>% 
-             filter(id %in% c(0, edge_trim$from)) %>% 
-             mutate(value=c(100, rep(0, nrow(.)-1))), 
-           edges=edge_trim) %>% 
-  visEdges(color=list(opacity=.10))
+listed_packs = c('gamlss', 'VGAM', 'gamm4', 'ggplot2', 'gamair', 'flexmix', 'brms', 'mediation', 'pscl')
+edges_trim = edges %>% 
+  filter(to == 0) %>% 
+  mutate(value = if_else(from %in% nodes$id[nodes$label %in% listed_packs], 30L, value),
+         length = if_else(from %in% nodes$id[nodes$label %in% listed_packs], 0, 250))
 
+nodes_trim = nodes %>% 
+  filter(id %in% c(0, edges_trim$from)) %>% 
+  mutate(value=c(100, rep(0, nrow(.)-1)),
+         value = if_else(label %in% listed_packs, 30, value))
+  
+visNetwork(nodes = nodes_trim, 
+             edges=edges_trim) %>% 
+  visEdges(color=list(opacity=.10),
+           # length = c(200,10),
+           physics = T)
 # adj_mat = create_adjacency(edges, n1 = 'from', n2='to')
 # 
 # library(igraph)
@@ -679,16 +746,6 @@ survey_perc = get_perc('survey')
 @lumley2011complex
 
 @heeringa2017applied
-
-# Censored, truncated, and related
-
-glm.nb, glmer.nb
-survival
-pscl
-VGAM, gamlss
-
-
-
 
 # Principal components & Factor analysis
 
@@ -946,7 +1003,7 @@ Several packages extend the capabilities of <span class="pack">lavaan</span>.
 lavaan_depgraph = get_depgraph('lavaan')
 ```
 
-```{r lavaan_graph, echo=F, eval=T}
+```{r lavaan_graph, echo=F, eval=T, cache=FALSE}
 nodes = lavaan_depgraph$node_df %>% 
   rename(label=name) %>% 
   rownames_to_column(var='id') %>% 
@@ -955,19 +1012,27 @@ edges = lavaan_depgraph$edge_df %>%
   rename(from=source,
          to=target)
 
-edge_trim = edges %>% 
-  filter(to == 0)
-visNetwork(nodes = nodes %>% 
-             filter(id %in% c(0, edge_trim$from)) %>% 
-             mutate(value=c(100, rep(0, nrow(.)-1))), 
-           edges=edge_trim) %>% 
-  visEdges(color=list(opacity=.10))
+listed_packs = c('blavaan', 'survey.lavaan', 'lavaanPlot', 'semTools', 'regsem', 'lavaan.shiny', 'psych', 'piecewiseSEM', 'AER')
+edges_trim = edges %>% 
+  filter(to == 0) %>% 
+  mutate(value = if_else(from %in% nodes$id[nodes$label %in% listed_packs], 30L, value),
+         length = if_else(from %in% nodes$id[nodes$label %in% listed_packs], 0, 250))
+
+nodes_trim = nodes %>% 
+  filter(id %in% c(0, edges_trim$from)) %>% 
+  mutate(value=c(100, rep(0, nrow(.)-1)),
+         value = if_else(label %in% listed_packs, 30, value))
+  
+visNetwork(nodes = nodes_trim, 
+             edges=edges_trim) %>% 
+  visEdges(color=list(opacity=.10),
+           # length = c(200,10),
+           physics = T)
 ```
 
 In terms of Mplus style extensions, note <span class="pack">lavaan.survey</span> (survey design), <span class="pack">blavaan</span> (Bayesian), and <span class="pack">semTools</span>, which adds things like multiple imputation, measurement invariance testing, additional fit indices and a lot more.
 
 A couple others I will note but with which I haven't used yet.  I note them because I will at some point, and their intentions are in the right place. One is <span class="pack">regsem</span>.  The vast majority of SEM models are grossly overfit, estimating dozens of parameters with only a couple hundred observations.  Such a package can surely assist with this problem, though I predict many will not like what they find (even though it will be a better result).  In addition, while writing this I came across the <span class="pack">lavaanPlot</span> package, which might save me at least 50% of the headache of using <span class="pack">Diagrammer</span>.
-
 
 ### Beyond lavaan
 
@@ -1100,7 +1165,7 @@ Diagrammer_perc = get_perc('Diagrammer')
 
 @pearl2009causality Also, he has every article available on [his website](http://bayes.cs.ucla.edu/jp_home.html).
 
-There are several UseR! series entries for graphical models and network analysis.
+There are several Use R! series entries for graphical models and network analysis.
 
 - @hojsgaard2012graphical
 - @luke2015network
@@ -1191,7 +1256,7 @@ Spatial models incorporate additional structure in a model that has some spatial
 A starting point for spatial data is the <span class="pack">sp</span> package, which provides basic spatial objects that can then be used for mapping or modeling, such as <span class="objclass">SpatialPoints</span>, <span class="objclass">SpatialPolygonsDataFrame</span> and more.  Many, many other packages rely on <span class="pack">sp</span>.
 
 
-```{r sp_getgraph, eval=TRUE, echo=FALSE, cache=FALSE}
+```{r sp_getgraph, eval=TRUE, echo=FALSE}
 sp_depgraph = get_depgraph('sp')
 ```
 
@@ -1211,7 +1276,7 @@ edges_trim = edges %>%
          length = if_else(from %in% nodes$id[nodes$label %in% listed_packs], 0, 250))
 
 nodes_trim = nodes %>% 
-  filter(id %in% c(0, edge_trim$from)) %>% 
+  filter(id %in% c(0, edges_trim$from)) %>% 
   mutate(value=c(100, rep(0, nrow(.)-1)),
          value = if_else(label %in% listed_packs, 30, value))
   
@@ -1224,7 +1289,7 @@ visNetwork(nodes = nodes_trim,
 
 
 
-A lot of <span class="pack">sp</span>, and its corresponding UseR book, is geared toward creating a map from scratch, which is great, but often rarely needed, as typically one already has map data, e.g. in the form of shape files, and wants to simply import and then model or visualize it.  It also uses lattice and base R for visualization, and is inordinately slow to visualize its products.   While sp has been around for a long time, the newer <span class="pack">sf</span> ([simple features](https://en.wikipedia.org/wiki/Simple_Features)) package will eventually supercede it (or at least that's the plan), so I'll give a quick example.
+A lot of <span class="pack">sp</span>, and its corresponding Use R! book, is geared toward creating a map from scratch, which is great, but often rarely needed, as typically one already has map data, e.g. in the form of shape files, and wants to simply import and then model or visualize it.  It also uses lattice and base R for visualization, and is inordinately slow to visualize its products.   While sp has been around for a long time, the newer <span class="pack">sf</span> ([simple features](https://en.wikipedia.org/wiki/Simple_Features)) package will eventually supersede it (or at least that's the plan), so I'll give a quick example.
 
 ```{r spatial_sf}
 map_obj = sf::st_read("Shapefile.shp")
@@ -1317,8 +1382,8 @@ model_train  = train(X_train, y_train,
                      trControl = cv_opts,
                      preProcess = c("center", "scale"))  
 
-preds_rf = predict(model_train, X_test)           # predictions
-confusionMatrix(preds_rf, y_test)                 # classification results
+preds_rf = predict(model_train, X_test)          # predictions
+confusionMatrix(preds_rf, y_test)                # classification results
 ```
 
 If you use caret for nothing else, the <span class="func">confusionMatrix</span> function is very handy for any classification model.
@@ -1366,7 +1431,7 @@ lime_perc = get_perc('lime')
 - <span class="pack">lime</span> `r lime_perc`%
 
 
-## recommended reading
+## Machine Learning recommended reading
 
 [Machine Learning Task View](https://www.rdocumentation.org/taskviews#MachineLearning)
 
@@ -1385,28 +1450,91 @@ You can find detailed examples in my document [here](https://m-clark.github.io/i
 
 # Bayesian
 
-[Bayesian Task View](https://www.rdocumentation.org/taskviews#Bayesian)
+Bayesian modeling is very easy to do in R these days, even for fairly complicated models.  Many packages use BUGS or its JAGS dialect, though more recent developments have been made with Stan.
 
-rjags
-r2OpenBugs
-coda
-MCMCpack
-MCMCglmm
-R-INLA
+## Miscellaneous packages
+
+Bayesian analysis has a long history in R, so you'll find various packages more or less doing their own thing, but revolving around a couple of key packages like <span class="pack">coda</span>, <span class="pack">MCMCpack</span>, <span class="pack">rjags</span>, etc.  You can use <span class="pack">rjags</span> to run something written in BUGS and get further processing of the results with <span class="pack">coda.</span>  <span class="pack">MCMCpack</span> and <span class="pack">MCMCglmm</span> provide the ability to run several types of models in the Bayesian context.
+
+```{r bayes_misc}
+model <- rjags::coda.samples(X, c("alpha","beta","sigma"), n.iter=1000)
+summary(model)
+
+coda::gelman.diag(model)    # a diagnostic
+coda::traceplot(model)      # a diagnostic
+
+MCMCpack::MCMClogit(y ~ x + z, burnin = 1000, mcmc = 5000, thin = 10)  # logistic regression model
+MCMCglmm::MCMCglmm(PO ~ x + z, burnin = 1000, nitt = 5000, thin = 10, random =  ~group)  # a mixed model
+```
+
 
 ## Stan
 
-rstan
-rstanarm
-brms
+Many of those packages are seeing decreased use because of <span class="emph">Stan</span>. Stan is a probabilistic programming language developed by a very smart group of people at Columbia, and whose development has very rapidly enabled many people to jump in and get their Bayesian analysis done quickly, and explore the results with ease.  To begin, one can write their own Stan modeling program and use <span class="pack">rstan</span> to run it.  The <span class="pack">rstanarm</span>, developed by the Stan group, makes it as easy to run glm, ordinal, mixed, and multivariate models as it is to run them with standard tools.  The <span class="pack">brms</span> package is ridiculously flexible, allowing one to conduct very complex models without every programming in the Stan language directly.  It has many distributional families, mixed modeling capability, and a variety of means to explore the model after the fact (some of which would apply to <span class="pack">rstanarm</span> as well).
+
+```{r bayes_stan}
+model = rstan(file='mystandcode.stan', warmup = 1000, iter = 5000, thin = 10, cores=4)  # 4 chains in parallel
+model = rstanarm::stan_glm(y ~ x, family = 'binomial')    # Bayesian GLM
+
+# set priors for random effect and regression coefficients
+priors = c(brms::prior(cauchy(0, 1), class = sd),
+           prior(normal(0,10), class = b))
+
+model = brm(y ~ x + (1 + x|group), family = 'zero_one_inflated_beta', prior = priors)   # lme4 style
+summary(model)
+launch_shinystan(model)                            # interactive exploration (also rstanarm)
+pp_check(model)                                    # posterior predictive distribution (also rstanarm)
+marginal_effects(model)                            # plot covariate effects
+hypothesis(model, hypothesis = "exp(x) - 2 = 0")   # a specific test
+```
+
+Many other packages are using Stan under the hood as well for specific types of models.
 
 ## Other
-greta
-tidybayes
+
+Some newer packages to keep an eye on include <span class="pack">greta</span>, which looks to take the Hamiltonian Monte Carlo approach of Stan to Tensor Flow and big data, and <span class="pack">tidybayes</span>, which will make for some easier post-processing of model results.
 
 
-## list of packages
-## recommended reading
+## Bayesian list of packages
+
+```{r bayes_percs, eval=TRUE, echo=FALSE}
+rjags_perc = get_perc('rjags')
+r2OpenBugs_perc = get_perc('r2OpenBugs')
+MCMCpack_perc = get_perc('MCMCpack')
+MCMCglmm_perc = get_perc('MCMCglmm')
+coda_perc = get_perc('coda')
+rstan_perc = get_perc('rstan')
+rstanarm_perc = get_perc('rstanarm')
+brms_perc = get_perc('brms')
+greta_perc = get_perc('greta')
+tidybayes_perc = get_perc('tidybayes')
+```
+
+
+- <span class="pack">rjags</span> `r rjags_perc`%
+- <span class="pack">r2OpenBugs</span> `r r2OpenBugs_perc`%
+- <span class="pack">MCMCpack</span> `r MCMCpack_perc`%
+- <span class="pack">MCMCglmm</span> `r MCMCglmm_perc`%
+- <span class="pack">coda</span> `r coda_perc`%
+- <span class="pack">rstan</span> `r rstan_perc`%
+- <span class="pack">rstanarm</span> `r rstanarm_perc`%
+- <span class="pack">brms</span> `r brms_perc`%
+- <span class="pack">greta</span> `r greta_perc`%
+- <span class="pack">tidybayes</span>`r tidybayes_perc`%  Not on CRAN yet ([link](https://github.com/mjskay/tidybayes)).
+
+
+## Bayesian recommended reading
+
+[Bayesian Task View](https://www.rdocumentation.org/taskviews#Bayesian)
+
+@kruschke_doing_2014  Bayesian puppies!
+
+@mcelreath2016
+
+@gelman_bda
+
+You can learn more about Stan in my document: [Bayesian Basics](https://m-clark.github.io/bayesian-basics/).
+
 
 # Text
 
@@ -1427,7 +1555,7 @@ keras
 
 [Task View](https://www.rdocumentation.org/taskviews#NaturalLanguageProcessing)
 
-You can find detailed examples in my document [here](https://m-clark.github.io/text-analysis-with-R).
+You can find detailed examples in my document [here](https://m-clark.github.io/text-analysis-with-R/).
 
 
 # Discipline specific
@@ -1454,8 +1582,11 @@ add broom at beginning
 
 # References
 
+[^optim]: Even the author of optim [doesn't recommend it](https://nashjc.wordpress.com/2016/11/10/why-optim-is-out-of-date/).
+
 [^jagam]: There is the <span class="func">jagam</span> function in <span class="pack">mgcv</span> to use JAGS, but I can't think of a reason to use it over <span class="pack">brms</span>.
 
 [^lgc]: Using a mixed model on longitudinal data with <span class="pack">flexmix</span> negates the need to use SEM for what are sometimes called <span class="emph">Latent Class Growth Curve Models</span>, <span class="emph">Growth Mixture Models</span> or <span class="emph">Latent Trajectory Models</span>.  If you need indirect effects, you'll have to use Mplus or similar, and good luck with that.
 
 [^lavlack]: Currently <span class="pack">lavaan</span> lacks the incorporation of categorical latent variables (i.e. mixture models), but you have more functionality in R for those elsewhere than you would Mplus. The current <span class="pack">lavaan</span>  also lacks multilevel SEM, but that is a pretty rare model.  There are very minor other differences.
+
