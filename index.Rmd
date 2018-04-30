@@ -1505,7 +1505,7 @@ visNetwork(nodes = nodes_trim,
 To begin, one can write their own Stan modeling program and use <span class="pack">rstan</span> to run it.  The <span class="pack">rstanarm</span>, developed by the Stan group, makes it as easy to run glm, ordinal, mixed, and multivariate models as it is to run them with standard tools.  The <span class="pack">brms</span> package is ridiculously flexible, allowing one to conduct very complex models without every programming in the Stan language directly.  It has many distributional families, mixed modeling capability, and a variety of means to explore the model after the fact (some of which would apply to <span class="pack">rstanarm</span> as well).
 
 ```{r bayes_stan}
-model = rstan(file='mystandcode.stan', warmup = 1000, iter = 5000, thin = 10, cores=4)  # 4 chains in parallel
+model = rstan::stan(file='mystandcode.stan', warmup = 1000, iter = 5000, thin = 10, cores=4)  # 4 chains in parallel
 model = rstanarm::stan_glm(y ~ x, family = 'binomial')    # Bayesian GLM
 
 # set priors for random effect and regression coefficients
@@ -1570,7 +1570,7 @@ You can learn more about Stan in my document: [Bayesian Basics](https://m-clark.
 
 # Text analysis
 
-Most of text analysis involves serious data munging in order to take the unstructured text and put it into a form that's useful.  What analysis is done once the data is prepared isn't really specific to text.  For example, one might use any classification model for sentiment analysis, and latent dirichlet allocation can be applied to any matrix of counts.  In other instances, there are more text-oriented analyses, e.g. in the realm of deep learning.
+Most of text analysis involves serious data munging in order to take the unstructured text and put it into a form that's useful.  What analysis is done once the data is prepared isn't really specific to text.  For example, one might use any classification model for sentiment analysis, and latent dirichlet allocation can be applied to any matrix of counts.  In other instances, there are more text-oriented analyses, e.g. in the realm of deep learning (see keras).
 
 The first thing to know is that there are many tools in the base R installation to deal with text.
 
@@ -1579,36 +1579,71 @@ grep(word_vec, pattern = 'xyz', value = T)          # return matching values
 grepl(word_vec, pattern = 'xyz')                    # return a vector of TRUE, FALSE if match
 gsub(word_vec, pattern='xyz', replacement = 'qt')   # string replacement
 substr(word_vec, start = 5, stop = 10)              # substring
-adist(word_vec1, word_vec2)                         # string distance between sets of words
+adist(word_vec1, word_vec2)                         # string distance between sets of words; see stringdist package
 tolower(word_vec)                                   # convert to lower case
 ```
 
-Generally you might want to use a package like stringr, which is actually a wrapper for both stringi and some base R functions.  This serves to mostly make functions work consistently, but there is little other advantage.
+Generally you might want to use a package like <span class="pack">stringr</span>, which is actually a wrapper for both <span class="pack">stringi</span> and some base R functions.  This serves to mostly make functions work consistently, but there is little other advantage.
 
 ```{r text_stringr}
-str_extract(word_vec, pattern = 'xyz')
+stringr::str_extract(word_vec, pattern = 'xyz')
 str_replace(word_vec, pattern = 'xyz', replacement = 'qt')
 str_remove(word_vec, pattern = 'xyz')
 str_sub(word_vec, start = 5, end = 10)
 ```
 
-When it comes to text analysis, there's a lot going on in the R world. Traditionally, there are packages like tm, lda, koRpus, and topicmodels.  More recently, there are ones that make things easier, faster, or add functionality. These include tidytext, text2vec, and quanteda.
+When it comes to text analysis, there's a lot going on in the R world. Traditionally, there are packages like <span class="pack">tm</span>, <span class="pack">lda</span>, <span class="pack">koRpus</span>, and <span class="pack">topicmodels</span>.  More recently, there are ones that make things easier, faster, or add functionality. These include <span class="pack">tidytext</span>, <span class="pack">text2vec</span>, and <span class="pack">quanteda</span>.
+
+The following assumes a tidy text data frame, where you have a column that notes the document, a column for the words in the document.  You can use basic <span class="pack">dplyr</span> functionality to remove stopwords and get word counts, then others to create the objects needed for further processing, and eventually analysis.  The following is an example of a topic modeling approach.
+
+```{r text_easy}
+lda_model = text2vec::LDA$new(n_topics = 10)   # topic model setup
+
+processed_text %>% 
+  anti_join(stop_words_df) %>%           # remove stopwords, with stop_words_df = data.frame(words=stop_word_vector) 
+  count(document, words) %>%             # get word counts
+  tidytext::cast_dfm() %>%               # create a document term/feature matrix
+  quanteda::dfm_wordstem() %>%           # quanteda allows further processing while in dtm form
+  text2vec::lda_model$fit_transform()    # fit a fast LDA
+```
+
+Examples of the intial processing can be found with [tidytext](https://cran.r-project.org/web/packages/tidytext/vignettes/tidytext.html) documentation, though folks very familiar with <span class="pack">dplyr</span> will see what's going on clearly.  In short, standard text processing in R is just about as easy as it can be.  Your biggest problem will be dealing with large amounts of text, for which R's memory hungry approach is not well suited.
+
+As far as text-specific analysis goes, consider some packages like <span class="pack">stm</span>, <span class="pack">text2vec</span>, <span class="pack">quanteda</span>.
+
+## Text analysis list of packages
+
+```{r text_percs, eval=TRUE, echo=FALSE}
+stringi_perc = get_perc('stringi')
+stringr_perc = get_perc('stringr')
+stringdist_perc = get_perc('stringdist')
+tm_perc = get_perc('tm')
+lda_perc = get_perc('lda')
+topicmodels_perc = get_perc('topicmodels')
+tidytext_perc = get_perc('tidytext')
+quanteda_perc = get_perc('quanteda')
+text2vec_perc = get_perc('text2vec')
+stm_perc = get_perc('stm')
+keras_perc = get_perc('keras')
+```
 
 
-## list of packages
+- <span class="pack">stringi</span> `r stringi_perc`%
+- <span class="pack">stringr</span> `r stringr_perc`%
+- <span class="pack">stringdist</span> `r stringdist_perc`%
+- <span class="pack">tm</span> `r tm_perc`%
+- <span class="pack">lda</span> `r lda_perc`%
+- <span class="pack">topicmodels</span> `r topicmodels_perc`%
+- <span class="pack">tidytext</span> `r tidytext_perc`%
+- <span class="pack">quanteda</span> `r quanteda_perc`%
+- <span class="pack">text2vec</span> `r text2vec_perc`%
+- <span class="pack">stm</span> `r stm_perc`%
+- <span class="pack">keras</span>`r keras_perc`%  
 
-tidytext
-text2vec
-stringdist
 
-tm
-lda
-topicmodels
-keras
+## Text analysis recommended reading
 
-## recommended reading
-
-[Task View]()
+[Task View](https://www.rdocumentation.org/taskviews#NaturalLanguageProcessing)
 
 You can find detailed examples in my document [here](https://m-clark.github.io/text-analysis-with-R/).
 
@@ -1631,7 +1666,6 @@ caret zelig recipes tm? sjstats car
 
 # Misc to do
 
-add broom at beginning
 
 # References
 
