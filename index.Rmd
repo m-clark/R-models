@@ -82,12 +82,12 @@ I will ignore the data argument in every example that uses the typical R formula
 
 What this won't provide:
 
-- data processing required
+- data processing required, except where it is specifically tied to the analysis
 - a detailed explanation of the model and why you'd use it
-- visualization
+- visualization (though some packages will be mentioned for specifically visual approaches)
 - a list of every package that *might* be useful
 
-For some content I will provide recommended reading.  These are texts are mostly those I've benefited from or I would think would be useful to others, especially those just starting out with analysis, at an intermediate stage, or even coming to R from another language.  They are not meant to be a list seminal works on the subject, though some might be.
+For some content I will provide recommended reading.  These are texts are mostly those I've benefited from or I would think would be useful to others, especially those just starting out with analysis, at an intermediate stage, or even coming to R from another language.  They are not meant to be a list seminal works on the subject, though some might be.  I also include the Task View if applicable. The link will take you to Rdocumentation.org, which will list many packages, but which the first link is the official Task View, where you will find more details about the packages.
 
 
 Color coding:
@@ -290,16 +290,11 @@ model = betareg::betareg(y ~  x + z)
 Note that many modeling packages might offer the standard beta as a distributional family though.
 
 
-
-
-
-
-
 ### Miscellaneous
 
 Some might be interested in quantile regression.  The <span class="pack">quantreg</span> package would be a starting point.  In addition, the <span class="pack">car</span> package has a few miscellaneous functions for various models, e.g. add-variable plots, variance inflation factors, influence metrics, and more.
 
-## Linear models and GLM list of packages
+## GLM list of packages
 
 ```{r lm_percs, eval=TRUE, echo=FALSE}
 # roughly in order
@@ -1470,7 +1465,44 @@ MCMCglmm::MCMCglmm(PO ~ x + z, burnin = 1000, nitt = 5000, thin = 10, random =  
 
 ## Stan
 
-Many of those packages are seeing decreased use because of <span class="emph">Stan</span>. Stan is a probabilistic programming language developed by a very smart group of people at Columbia, and whose development has very rapidly enabled many people to jump in and get their Bayesian analysis done quickly, and explore the results with ease.  To begin, one can write their own Stan modeling program and use <span class="pack">rstan</span> to run it.  The <span class="pack">rstanarm</span>, developed by the Stan group, makes it as easy to run glm, ordinal, mixed, and multivariate models as it is to run them with standard tools.  The <span class="pack">brms</span> package is ridiculously flexible, allowing one to conduct very complex models without every programming in the Stan language directly.  It has many distributional families, mixed modeling capability, and a variety of means to explore the model after the fact (some of which would apply to <span class="pack">rstanarm</span> as well).
+Many of those packages are seeing decreased use because of <span class="emph">Stan</span>. Stan is a probabilistic programming language developed by a very smart group of people at Columbia, and whose development has very rapidly enabled many people to jump in and get their Bayesian analysis done quickly, and explore the results with ease.  The following shows the rstan ecosystem.
+
+
+```{r stan_getgraph, eval=TRUE, echo=FALSE}
+stan_depgraph = get_depgraph('rstan')
+```
+
+```{r stan_graph, echo=F, eval=T, cache=FALSE}
+nodes = stan_depgraph$node_df %>% 
+  rename(label=name) %>% 
+  rownames_to_column(var='id') %>% 
+  mutate(id=as.integer(id)-1)
+edges = stan_depgraph$edge_df %>% 
+  rename(from=source,
+         to=target)
+
+listed_packs = c('brms', 'bayesplot', 'rstanarm', 'shinystan', 'loo', 'tidybayes', 'rethinking')
+edges_trim = edges %>% 
+  filter(to == 0) %>% 
+  mutate(value = if_else(from %in% nodes$id[nodes$label %in% listed_packs], 30L, value),
+         length = if_else(from %in% nodes$id[nodes$label %in% listed_packs], 0, 250))
+
+nodes_trim = nodes %>% 
+  filter(id %in% c(0, edges_trim$from)) %>% 
+  mutate(value=c(100, rep(0, nrow(.)-1)),
+         value = if_else(label %in% listed_packs, 30, value))
+  
+visNetwork(nodes = nodes_trim, 
+             edges=edges_trim) %>% 
+  visEdges(color=list(opacity=.10),
+           # length = c(200,10),
+           physics = T)
+```
+
+
+
+
+To begin, one can write their own Stan modeling program and use <span class="pack">rstan</span> to run it.  The <span class="pack">rstanarm</span>, developed by the Stan group, makes it as easy to run glm, ordinal, mixed, and multivariate models as it is to run them with standard tools.  The <span class="pack">brms</span> package is ridiculously flexible, allowing one to conduct very complex models without every programming in the Stan language directly.  It has many distributional families, mixed modeling capability, and a variety of means to explore the model after the fact (some of which would apply to <span class="pack">rstanarm</span> as well).
 
 ```{r bayes_stan}
 model = rstan(file='mystandcode.stan', warmup = 1000, iter = 5000, thin = 10, cores=4)  # 4 chains in parallel
@@ -1536,9 +1568,34 @@ tidybayes_perc = get_perc('tidybayes')
 You can learn more about Stan in my document: [Bayesian Basics](https://m-clark.github.io/bayesian-basics/).
 
 
-# Text
+# Text analysis
+
+Most of text analysis involves serious data munging in order to take the unstructured text and put it into a form that's useful.  What analysis is done once the data is prepared isn't really specific to text.  For example, one might use any classification model for sentiment analysis, and latent dirichlet allocation can be applied to any matrix of counts.  In other instances, there are more text-oriented analyses, e.g. in the realm of deep learning.
+
+The first thing to know is that there are many tools in the base R installation to deal with text.
+
+```{r text_base_R}
+grep(word_vec, pattern = 'xyz', value = T)          # return matching values
+grepl(word_vec, pattern = 'xyz')                    # return a vector of TRUE, FALSE if match
+gsub(word_vec, pattern='xyz', replacement = 'qt')   # string replacement
+substr(word_vec, start = 5, stop = 10)              # substring
+adist(word_vec1, word_vec2)                         # string distance between sets of words
+tolower(word_vec)                                   # convert to lower case
+```
+
+Generally you might want to use a package like stringr, which is actually a wrapper for both stringi and some base R functions.  This serves to mostly make functions work consistently, but there is little other advantage.
+
+```{r text_stringr}
+str_extract(word_vec, pattern = 'xyz')
+str_replace(word_vec, pattern = 'xyz', replacement = 'qt')
+str_remove(word_vec, pattern = 'xyz')
+str_sub(word_vec, start = 5, end = 10)
+```
+
+When it comes to text analysis, there's a lot going on in the R world. Traditionally, there are packages like tm, lda, koRpus, and topicmodels.  More recently, there are ones that make things easier, faster, or add functionality. These include tidytext, text2vec, and quanteda.
 
 
+## list of packages
 
 tidytext
 text2vec
@@ -1549,26 +1606,22 @@ lda
 topicmodels
 keras
 
-## list of packages
-
 ## recommended reading
 
-[Task View](https://www.rdocumentation.org/taskviews#NaturalLanguageProcessing)
+[Task View]()
 
 You can find detailed examples in my document [here](https://m-clark.github.io/text-analysis-with-R/).
 
 
 # Discipline specific
 
-Probably should avoid
+Here are some discipline-specific task views that have not already been mentioned where you will find packages that may have just the modeling tools you're looking for.
 
-## Ecological
-[Task View](https://www.rdocumentation.org/taskviews#Environmetrics)
-vegan
-Zuur et al.
-
-
-## Financial
+- Ecological: [Task View](https://www.rdocumentation.org/taskviews#Environmetrics)
+- Econometrics: [Task View](https://www.rdocumentation.org/taskviews#Econometrics)
+- Financial: [Task View](https://www.rdocumentation.org/taskviews#Environmetrics)
+- Genetics: [Task View](https://www.rdocumentation.org/taskviews#Genetics)
+- Social Sciences: [Task View](https://www.rdocumentation.org/taskviews#SocialSciences)
 
 # Modeling frameworks and helpers
 
