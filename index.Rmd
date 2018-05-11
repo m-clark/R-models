@@ -754,9 +754,9 @@ A lot of techniques fall under the heading of 'dimension reduction', 'factor ana
 
 ## PCA
 
-Principal components analysis is one of the most widely used dimension reduction techniques, and brings us to the first example of unsupervised methods.  In this case, we don't have a single target variable to predict, but several, and generally we are not modeling them with other covariates, but trying to reduce them.  The basic idea of PCA is to reduce the data to fewer dimensions that nevertheless retain the most variance seen in the data.
+Principal components analysis is one of the most widely used dimension reduction techniques, and brings us to the first example of unsupervised methods.  In this case, we don't have a single target variable to predict, but several, and generally we are not modeling them with other covariates, but trying to reduce them to a smaller dimension.  The basic idea of PCA is to reduce the data to fewer dimensions that nevertheless retain the most variance seen in the original data.
 
-Base R has <span class="func">princomp</span> and <span class="func">prcomp</span> functions, but they merely get the job done.  There are plenty of extensions of PCA to supervised settings, but you can do that exploration on your own.  
+Base R has <span class="func">princomp</span> and <span class="func">prcomp</span> functions, but they merely get the job done.  
 
 ```{r pca_demo}
 X = scale(X)          # standardize the data
@@ -784,7 +784,7 @@ loadings(model)
 scores(model)
 ```
 
-There are plenty of supervised extensions to PCA, but generally you'll have better choices.  For example, instead of PC regression, use techniques that won't require the dimension reduction, would better to such a process without being as restrictive (like a neural network), or would better suit the goals of some analyses (e.g. when variables belong to the same scale).
+There are plenty of supervised extensions to PCA, but generally you'll have better choices in such a modeling scenario.  For example, instead of PC regression, use techniques that won't require the dimension reduction (many machine learning techniques) and/or would be more flexible (e.g. a neural network), or would better suit the goals of some analyses (e.g. when variables belong to the same scale, factor analysis, and thus SEM, would be more appropriate).
 
 ## Factor analysis
 
@@ -801,6 +801,7 @@ The <span class="pack">psych</span> package offers far, far, more in this realm.
 
 ```{r fa_psych}
 model = psych::fa(X, nfactors = 2, rotate = 'oblimin', fm = 'ml')  # via maximum likelihood
+model
 model$loadings
 model$scores
 fa.diagram(model)                     # visualize
@@ -829,7 +830,7 @@ ltm_perc = get_perc('ltm')
 
 ## PCA/FA recommended reading
 
-I have some more on many dimension reduction techniques [here](https://m-clark.github.io/sem/FA_notes.html), which briefly covers/demos a wide variety of techniques like t-sne, non-negative matrix factorization, latent Dirichlet allocation, mixture models, recommender systems and more.  It spends more time on PCA and FA.
+I have some more information on many dimension reduction techniques [here](https://m-clark.github.io/sem/FA_notes.html), which briefly covers/demos a wide variety of techniques like t-sne, non-negative matrix factorization, latent Dirichlet allocation, mixture models, recommender systems and more.  It spends more time on PCA and FA.
 
 I also cover PCA/FA [here](https://m-clark.github.io/sem/), along with SEM, mixture models, IRT models and more.
 
