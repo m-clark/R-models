@@ -64,13 +64,12 @@ get_depgraph = function(pack) {
 }
 ```
 
-THIS DOCUMENT IS A WORK IN PROGRESS. IT IS CURRENTLY NOT COMPLETE.
 
 # Introduction
 
-This is a quick reference for the modeling syntax and associated packages.  While it covers a lot of ground, it is not meant to be exhaustive, but rather, it provides an easy reference for those new to R, someone trying out an unfamiliar (but otherwise common) technique, or those just interested in comparison to similar approaches in other environments.  In time, this may be rendered obsolete by the [parsnip package](https://github.com/topepo/parsnip), but until then, this can get you quickly started with many common models.
+This is a quick reference for the modeling syntax and associated packages.  While it covers a lot of ground, it is not meant to be exhaustive, but rather, it provides an easy reference for those new to R, someone trying out an unfamiliar (but otherwise common) technique, or those just interested in comparison to similar approaches in other environments.  It is likely anyone, regardless of R experience, could come across something new, or new to them.  In time, this may be rendered obsolete by the [parsnip package](https://github.com/topepo/parsnip), but until then, this can get you quickly started with many common models.
 
-Preference is given to base R functionality or what are perceived as very commonly used packages.  'Very common' is based on my own knowledge consulting across dozens of disciplines along with just regularly following the R community, and things like the rankings at [RDocumentation.org](https://rdocumentation.org), and packages listed in [CRAN Task Views](https://www.rdocumentation.org/taskviews).
+Preference is given to base R functionality or what are perceived as very commonly used packages.  'Very common' is based on my own knowledge consulting across dozens of disciplines and universities, regularly following the R community, and things like the rankings at [RDocumentation.org](https://rdocumentation.org) and packages listed in [CRAN Task Views](https://www.rdocumentation.org/taskviews).
 
 
 
@@ -87,7 +86,7 @@ What this won't provide:
 - visualization (though some packages will be mentioned for specifically visual approaches)
 - a list of every package that *might* be useful
 
-For some content I will provide recommended reading.  These are texts are mostly those I've benefited from or I would think would be useful to others, especially those just starting out with analysis, at an intermediate stage, or even coming to R from another language.  They are not meant to be a list seminal works on the subject, though some might be.  I also include the Task View if applicable. The link will take you to Rdocumentation.org, which will list many packages, but which the first link is the official Task View, where you will find more details about the packages.
+For some content I will provide recommended reading.  These are texts are mostly those I've benefited from or I would think would be useful to others, especially those just starting out with analysis, at an intermediate stage, or even coming to R from another language.  They are not meant to be a list of seminal works on the subject, though some might be.  I also include the Task View if applicable. The link will take you to Rdocumentation.org, which will list many packages, but the first link is the official Task View, where you will find more details about the packages.
 
 
 Color coding:
@@ -99,7 +98,7 @@ Color coding:
 - <span class="func">function</span>
 - <span class="objclass">object/class</span>
 
-When you see `pack::func` the first value is the package name and the second the function.  I show this for the first time to make clear what package is used, but otherwise it is assumed you've loaded the necessary package (`library(pack)`).
+When you see `pack::func` the first value is the package name and the second the function.  I show this for the first time to make clear what package is used, but otherwise it is assumed you've loaded the necessary package (i.e. `library(pack)`).
 
 
 # Basics
@@ -130,9 +129,9 @@ model.matrix(my_model)     # extract the model matrix
 predict(my_model, newdata=other_observations, type='response')  # specific predictions
 ```
 
-Some may also have a <span class="func">plot</span> method, but this will definitely vary by package both in whether it is available and what it will do.  For example, plotting an <span class="objclass">lm</span> object will explore residuals, while plotting a <span class="objclass">gam</span> will show the component plots of the smoothed terms. Some packages, like <span class="pack">ggeffects</span>, <span class="pack">visreg</span> and <span class="pack">margins</span>, will help plotting some types of effects.  I've found it easier to do oneself via <span class="pack">ggplot2</span>, rather than hope you can finagle a plot made by a package into something you actually want.
+Some may also have a <span class="func">plot</span> method, but this will definitely vary by package both in whether it is available and what it will do.  For example, plotting an <span class="objclass">lm</span> object will explore residuals, while plotting a <span class="objclass">gam</span> will show the component plots of the smoothed terms. Some packages, like <span class="pack">ggeffects</span>, <span class="pack">visreg</span>, and <span class="pack">margins</span> will help plotting some types of effects.  I've found it easier to do oneself via <span class="pack">ggplot2</span>, rather than hope you can finagle a plot made by a package into something you actually want.
 
-One way to prepare results for visualization and publishable tables is the <span class="pack">broom</span> package.  Its tidy function works with many very commonly used modeling packages, returning a <span class="func">tidy</span> data frame of, for example, the summary output.
+One way to prepare results for visualization and publishable tables is the <span class="pack">broom</span> package.  Its <span class="func">tidy</span> function works with many very commonly used modeling packages, returning a <span class="emph">tidy</span> data frame of, for example, the summary output.
 
 ```{r basics-broom}
 broom::tidy(my_model)
@@ -162,7 +161,7 @@ Others will be package specific. For example, <span class="basepack">mgcv</span>
 If you want to roll your own model, the base R installation comes with <span class="func">optim</span>, but you're probably better suited to use one of the many packages that provide more efficient[^optim] or simply better implementations of the same algorithms.  See the [Task View](https://www.rdocumentation.org/taskviews#Optimization) for starters, and know that many will work in a similar fashion as <span class="func">optim</span>.
 
 ```{r optim_demo}
-model = optim(start_values, my_opt_function, method = 'BFGS', control = list(maxit=1000))
+model = optim(par = start_values, fn = my_opt_function, method = 'BFGS', control = list(maxit=1000))
 model
 
 meths <- c("Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "nlm", "nlminb")
@@ -210,7 +209,7 @@ You typically can transform a variable within the formula itself.
 lm(y ~ log(x))
 ```
 
-This is fine for quick exploration, but generally it's poor practice to do so (you'll likely need the transformed variable in other contexts), and it simply won't work with some modeling functions.
+This is fine for quick exploration, but generally it's poor practice to do so (you'll likely need the transformed variable in other contexts), and it simply won't work with some modeling functions, often due to variable name issues.
 
 ### Categorical variable
 
@@ -226,7 +225,7 @@ lm(y ~ x)  # x is a factor
 
 #### Ordinal target
 
-Options thin out quickly when you have more than 2 categories for your target variable.  But there is still plenty to play with in R for ordinal and multinomial models.
+Standard binomial logistic regression was demonstrated above, but options thin out quickly when you have more than two categories for your target variable.  But there is still plenty to play with in R for ordinal and multinomial models.
 
 For ordinal models, the <span class="pack">rms</span> package is a very good starting point. The <span class="pack">ordinal</span> package will add random effects as well, in the familiar <span class="pack">lme4</span> style.
 
@@ -265,7 +264,7 @@ The standard GLM will only take you so far in terms of distributions for the tar
 
 Sometimes we have a response that doesn't quite fit the mold of commonly used distributions. A common situation regards a target variable of counts, where there are an inordinately large amount of zero counts where the event of interest did not occur.  In other cases, the scale is truncated at some value, or we may simply not see scores beyond a certain point.  In general we can consider <span class="emph">zero-altered</span> models, <span class="emph">truncated</span> distributions, and <span class="emph">censored</span> regression models.
 
-Probably the most common of these situations is the zero-altered case.  A good starting point for such models is the <span class="pack">pscl</span> package. For <span class="emph">zero-inflated</span> or <span class="emph">hurdle</span> models, you'll get two sets of output, a model that regards the zeros and one that regards the target variable in general. For censored regression, I provide an example with <span class="pack">AER</span>, as there is a common contributor to that package. Note that it is just using <span class="func">survreg</span> from the <span class="pack">survival</span> package.
+One of the more common of these situations is the zero-altered case[^nonzero].  A good starting point for such models is the <span class="pack">pscl</span> package. For <span class="emph">zero-inflated</span> or <span class="emph">hurdle</span> models, you'll get two sets of output, a model that regards the zeros and one that regards the target variable in general. For censored regression, I provide an example with <span class="pack">AER</span>, as there is a common contributor to that package. Note that it is just using <span class="func">survreg</span> from the <span class="pack">survival</span> package.
 
 ```{r other_zero}
 model = pscl::hurdle(y ~ x + z, dist = "negbin")  # hurdle model with negative binomial response
@@ -365,7 +364,7 @@ elasticnet_perc = get_perc('elasticnet')
 
 # Mixed models
 
-One of the most common generalizations from the GLM setting regards data dependent situations where observations are correlated with one another due to inherent clustering.  This is most commonly dealt with via <span class="emph">mixed models</span>.  You can find detailed examples in my document [here](https://m-clark.github.io/mixed-models-with-R).
+One of the more common generalizations from the GLM setting regards data dependent situations where observations are correlated with one another due to inherent clustering.  This is most commonly dealt with via <span class="emph">mixed models</span>.  You can find detailed examples in my document [here](https://m-clark.github.io/mixed-models-with-R).
 
 ## nlme
 
@@ -382,15 +381,15 @@ In addition, one can get at additional correlation/variance structure, though it
 
 ```{r nlme_cor}
 lme(y ~ x, random = ~ 1|group, weights = varIdent(form=~1|q))
-lme(y ~ x, random = ~ 1|group, correlation = corAR1(form=~1|q))
+lme(y ~ x, random = ~ 1|group, correlation = corAR1(form=~time|q))
 ```
 
 
 ## lme4
 
-The lme4 package is one of the most widely used modeling packages in R.  It's the best tool for mixed models, and I've used many within R and beyond.  It doesn't do everything, but it does a lot, and fast.  It serves most people's needs just fine.  Beyond that, many other packages work or depend on it, and other packages that extend lme4 will use the same modeling syntax.
+The <span class="pack">lme4</span> package is one of the most widely used modeling packages in R.  It's one of the best tools for mixed models, and I've used many within R and beyond.  It doesn't do everything, but it does a lot, and fast.  It serves most people's needs just fine.  Beyond that, many other packages work or depend on it, and other packages that extend <span class="pack">lme4</span> will use the same modeling syntax.
 
-In contrast to nlme, <span class="pack">lme4</span> is very efficient but does not have the capability (in a practical way) to do things like further examination of residual structure.  It does however extend the models to the GLM family (and negative binomial with glmer.nb).
+In contrast to nlme, <span class="pack">lme4</span> is very efficient but does not have the capability (in a practical way) to do things like further examination of residual structure.  It does however extend the models to the GLM family (and negative binomial with <span class="func">glmer.nb</span>).
 
 ```{r lme4}
 lme4::lmer(y ~ x + (1|group))
@@ -399,21 +398,21 @@ lmer(y ~ x + (1 + x|group))
 glmer(y ~ x + (1|group), family = 'binomial')
 ```
 
-Note that if you're labeling your data correctly, it doesn't matter to lme4 whether the clustering is nested or crossed.  However if you give the nested clusters the same labels (e.g. 1,2,3,4 in every A, B, C), you'll need to note this.
+Note that if you're labeling your data correctly, it doesn't matter to <span class="pack">lme4</span> whether the clustering is nested or crossed.  However if you give the nested clusters the same labels (e.g. 1,2,3,4 in every A, B, C), you'll need to note this.
 
 ```{r lme4_nest}
 lmer(y ~ x + (1|group/nested_group))
 lmer(y ~ x + (1|group) + (1|group:nested_group))
 ```
 
-Again though, you shouldn't label your data such that the same label can refer to multiple things.
+Again though, you shouldn't label your data such that the same label can refer to multiple things when it's not appropriate.
 
 
 
 
 ### lme4 extensions
 
-The following is a graph of packages that have a connection to lme4 directly (thick lines) or indirectly, and gives a sense that you'll have a lot to work with should you use this package.  Zoom in to see package names.
+The following is a graph of packages that have a connection to <span class="pack">lme4</span> directly (thick lines) or indirectly, and gives a sense that you'll have a lot to work with should you use this package.  Zoom in to see package names.
 
 ```{r lme4_getgraph, eval=TRUE, echo=FALSE}
 lme4_depgraph = get_depgraph('lme4')
@@ -443,7 +442,7 @@ visNetwork(nodes = nodes, edges=edges)
 ```
 
 
-You'll note in the graph one of the relatively large nodes regards the car package. People use that because lme4 won't give you p-values.  You don't need them though, because you can just use confint to get the interval estimates, e.g. via bootstrap.  The merTools package provides a more efficient approach to interval estimation, and in my experience is more like what you'd get with a Bayesian approach.
+You'll note in the graph one of the relatively large nodes regards the <span class="pack">car</span> package. People use that because <span class="pack">lme4</span> won't give you p-values.  You don't need them though, because you can just use confint to get the interval estimates, e.g. via bootstrap.  The <span class="pack">merTools</span> package provides a more efficient approach to interval estimation, and in my experience is more like what you'd get with a Bayesian approach.
 
 Here are some other useful packages:
 
@@ -459,15 +458,15 @@ Here are some other useful packages:
 Several mixed model packages have the same methods to extract certain features.
 
 ```{r mm_objects}
-fixef(model)       # fixed effects coefficient
-ranef(model)       # random effects coefficient
+fixef(model)       # fixed effects coefficients
+ranef(model)       # random effects coefficients
 VarCorr(model)     # variance components
 ```
 
 
 ## Related models
 
-You won't find much in the way of so-called <span class="emph">fixed effects models</span> (for panel data) in R, but the <span class="pack">plm</span> package does this .  The <span class="pack">geepack</span> will allow for <span class="emph">GEE</span> models to analyse data with various types of covariance structures.  And if all you want to do is correct your standard errors ('cluster-robust'), consider <span class="pack">sandwich</span>.
+You won't find much in the way of so-called <span class="emph">fixed effects models</span> (for panel data) in R, but the <span class="pack">plm</span> package does this.  The <span class="pack">geepack</span> will allow for <span class="emph">GEE</span> models to analyse data with various types of covariance structures.  And if all you want to do is correct your standard errors ('cluster-robust'), consider <span class="pack">sandwich</span>.
 
 ## Still other packages
 
@@ -513,7 +512,7 @@ I have a document [here](https://m-clark.github.io/generalized-additive-models/)
 
 <span class="emph">Generalized additive models</span> incorporate nonlinear, random, and spatial effects all under one roof.  One of the most powerful modeling packages in the R universe, the excellently named Mixed-GAM Computational Vehicle (<span class="pack">mgcv</span>), focuses on these, and even comes with the standard R installation!  
 
-My own opinion is that GAMs should be one's baseline model, as they allow for more complex modeling but penalize that complexity to help guard against overfitting.  Furthermore, assuming a linear relationship for everything is overly simplistic at best.  GAMs also have close connections to mixed models, so can be seen as an extension of those.  You can find detailed examples of GAMs in my document [here](https://m-clark.github.io/generalized-additive-models).
+My own opinion is that one would do well to use GAMs as a baseline model, as they allow for more complex modeling but penalize that complexity to help guard against overfitting.  Furthermore, assuming a linear relationship for everything is overly simplistic at best.  GAMs also have close connections to mixed models, so can be seen as an extension of those.  You can find detailed examples of GAMs in my document [here](https://m-clark.github.io/generalized-additive-models).
 
 ```{r gam}
 mgcv::gam(y ~ s(x))
@@ -1671,6 +1670,8 @@ Add tsibble to tseries section
 # References
 
 [^optim]: Even the author of optim [doesn't recommend it](https://nashjc.wordpress.com/2016/11/10/why-optim-is-out-of-date/).
+
+[^nonzero]: Any number besides zero can serve as the focal point (e.g. a one-inflated beta distribution).
 
 [^jagam]: There is the <span class="func">jagam</span> function in <span class="pack">mgcv</span> to use JAGS, but I can't think of a reason to use it over <span class="pack">brms</span>.
 
