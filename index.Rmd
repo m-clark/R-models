@@ -512,7 +512,7 @@ I have a document [here](https://m-clark.github.io/generalized-additive-models/)
 
 <span class="emph">Generalized additive models</span> incorporate nonlinear, random, and spatial effects all under one roof.  One of the most powerful modeling packages in the R universe, the excellently named Mixed-GAM Computational Vehicle (<span class="pack">mgcv</span>), focuses on these, and even comes with the standard R installation!  
 
-My own opinion is that one would do well to use GAMs as a baseline model, as they allow for more complex modeling but penalize that complexity to help guard against overfitting.  Furthermore, assuming a linear relationship for everything is overly simplistic at best.  GAMs also have close connections to mixed models, so can be seen as an extension of those.  You can find detailed examples of GAMs in my document [here](https://m-clark.github.io/generalized-additive-models).
+My own opinion is that one would do well to use GAMs as a baseline model, as they allow for more complex modeling, but penalize that complexity to help guard against overfitting.  Furthermore, assuming a linear relationship for everything is overly simplistic at best.  GAMs also have close connections to mixed models, so can be seen as an extension of those.  You can find detailed examples of GAMs in my document [here](https://m-clark.github.io/generalized-additive-models).
 
 ```{r gam}
 mgcv::gam(y ~ s(x))
@@ -528,14 +528,20 @@ gam(y ~ s(area, bs='mrf', xt=neighborhood_list))  # discrete spatial random effe
 Once you run the model, you'll want to explore it.
 
 ```{r gam-explore}
-gam.check(model)    # Did I let it get wiggly enough?
 plot(model)         # Visualize effects
+gam.check(model)    # Did I let it get wiggly enough?
 concurvity(model)   # the GAM form of collinearity
 ```
 
 
 
-The package also comes with two means of modeling mixed effect models directly, with <span class="pack">nlme</span> support via the <span class="func">gamm</span> function, and the with <span class="pack">lme4</span> support via the <span class="pack">gamm4</span> package.  With the former one can also get at temporal autocorrelation as well via the `correlation` argument.  There is capability to deal with missing values, multivariate outcomes, and handle large data sets. If you don't use smooth terms, <span class="pack">mgcv</span> can simply be seen as a means to model additional distributional families.  
+The package also comes with three approaches to mixed effect models:
+
+- via the <span class="func">s</span> function and `bs='re'`
+- <span class="pack">nlme</span> support via the <span class="func">gamm</span> function
+- <span class="pack">lme4</span> support via the <span class="pack">gamm4</span> package
+
+With the former one can also get at temporal autocorrelation as well via the `correlation` argument.  There is capability to deal with missing values, multivariate outcomes, and handle large data sets. So even if you don't use smooth terms, <span class="pack">mgcv</span> can simply be seen as a means to model additional distributional families.  
 
 
 ## Extensions and other considerations
@@ -588,7 +594,7 @@ visNetwork(nodes = nodes_trim,
 
 
 
-For example, most of the R community uses <span class="pack">ggplot2</span> to explore their data visually.  The package comes with <span class="func">geom_smooth</span>, which can actually use <span class="pack">mgcv</span> to display a nonlinear relationship between two variables.  Unfortunately it is only triggered automatically for large samples (> 1000), but you can always use it if desired via the `method` argument. You can even use the various arguments for the smooth term function.
+For example, most of the R community uses <span class="pack">ggplot2</span> to explore their data visually.  The package comes with <span class="func">geom_smooth</span>, which can actually use <span class="pack">mgcv</span> to display a nonlinear relationship between two variables.  It is only triggered automatically for large samples (> 1000), but you can always use it if desired via the `method` argument. You can even use the various arguments for the smooth term function.
 
 ```{r gam-ggplot}
 ggplot2::ggplot(aes(x, y)) +
@@ -600,9 +606,9 @@ ggplot(aes(x, y)) +
 
 I'll speak more about the package in the Bayesian section, but you can also use the <span class="func">s</span> function when using <span class="pack">brms</span>[^jagam].  Honestly, between those two packages and their respective capabilities, you'll likely need little more for your statistical modeling.  I personally use them all the time.
 
-At one time both <span class="pack">gamlss</span> and <span class="pack">VGAM</span> extended GAMs beyond what <span class="pack">mgcv</span> could do, and they still have some modeling capabilities not seen in <span class="pack">mgcv</span>, e.g. other distributional families.  However, <span class="pack">mgcv</span> has since made up some of the more important differences.  Also, I still see some using the R-core <span class="func">spline</span> function and <span class="pack">splines</span> package.  There is nothing to be gained there however.  There is also the <span class="pack">gam</span> package, by Trevor Hastie, the person who wrote one of the most widely cited works on the technique.  While it certainly does the job, it's not on the level of <span class="pack">mgcv</span> in terms of what all it can do.  Unfortunately some packages that use GAMs use it instead of <span class="pack">mgcv</span>, so you won't have all the nice functionality.
+At one time both <span class="pack">gamlss</span> and <span class="pack">VGAM</span> extended GAMs beyond what <span class="pack">mgcv</span> could do, and they still have some modeling capabilities not seen in <span class="pack">mgcv</span>, especially with regard to other distributional families.  However, <span class="pack">mgcv</span> has since made up some of the more important differences.  Also, I still see some using the R-core <span class="func">spline</span> function and <span class="pack">splines</span> package.  There is nothing to be gained there however.  There is also the <span class="pack">gam</span> package, by Trevor Hastie, the person who wrote one of the most widely cited works on the technique.  While it certainly does the job, it's not on the level of <span class="pack">mgcv</span> in terms of what all it can do.  Unfortunately, some packages that use GAMs use it instead of <span class="pack">mgcv</span>, so you won't have all the nice functionality.
 
-In my document on GAMs I quote Shalizi who I think sums up the reason to use the models nicely. So I'll do so again here.
+In my document on GAMs, I quote Cosma Shalizi, who I think sums up the reason to use the models nicely. So I'll do so again here.
 
 > With modern computing power, there are very few situations in which it is actually better to do linear regression than to fit an additive model. In fact, there seem to be only two good reasons to prefer linear models.<br> <br>
 Our data analysis is guided by a credible scientific theory which asserts linear relationships among the variables we measure (not others, for which our observables serve as imperfect proxies).<br> <br>
