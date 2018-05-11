@@ -258,13 +258,13 @@ The standard GLM will only take you so far in terms of distributions for the tar
 - <span class="pack">glm.nb</span>: Base R function for the negative binomial
 - <span class="pack">pscl</span>: Zero-inflated and hurdle models
 - <span class="pack">betareg</span>, <span class="pack">dirichletReg</span>: Beta (0, 1) and Dirichlet distributions (e.g. compositional data)
-- <span class="pack">VGAM</span>, <span class="pack">mgcv</span>, <span class="pack">gamlss</span>: Additive modeling packages that come with many additional distributions (e.g. student T, bivariate logit/probit, censored normal, tweedie, multivariate gaussian, etc.)
+- <span class="pack">VGAM</span>, <span class="basepack">mgcv</span>, <span class="pack">gamlss</span>: Additive modeling packages that come with many additional distributions (e.g. student T, bivariate logit/probit, censored normal, tweedie, multivariate gaussian, etc.)
 
 #### Censored, truncated, bounded, and related
 
 Sometimes we have a response that doesn't quite fit the mold of commonly used distributions. A common situation regards a target variable of counts, where there are an inordinately large amount of zero counts where the event of interest did not occur.  In other cases, the scale is truncated at some value, or we may simply not see scores beyond a certain point.  In general we can consider <span class="emph">zero-altered</span> models, <span class="emph">truncated</span> distributions, and <span class="emph">censored</span> regression models.
 
-One of the more common of these situations is the zero-altered case[^nonzero].  A good starting point for such models is the <span class="pack">pscl</span> package. For <span class="emph">zero-inflated</span> or <span class="emph">hurdle</span> models, you'll get two sets of output, a model that regards the zeros and one that regards the target variable in general. For censored regression, I provide an example with <span class="pack">AER</span>, as there is a common contributor to that package. Note that it is just using <span class="func">survreg</span> from the <span class="pack">survival</span> package.
+One of the more common of these situations is the zero-altered case[^nonzero].  A good starting point for such models is the <span class="pack">pscl</span> package. For <span class="emph">zero-inflated</span> or <span class="emph">hurdle</span> models, you'll get two sets of output, a model that regards the zeros and one that regards the target variable in general. For censored regression, I provide an example with <span class="pack">AER</span>, as there is a common contributor to that package. Note that it is just using <span class="func">survreg</span> from the <span class="basepack">survival</span> package.
 
 ```{r other_zero}
 model = pscl::hurdle(y ~ x + z, dist = "negbin")  # hurdle model with negative binomial response
@@ -368,7 +368,7 @@ One of the more common generalizations from the GLM setting regards data depende
 
 ## nlme
 
-The <span class="pack">nlme</span> package  comes with base R.  It does standard linear and nonlinear (in the predictors) mixed models. It can add correlation structure (e.g. temporal (e.g. <span class="func">corAR</span>) and spatial (e.g. <span class="func">corGaus</span>)), as well as heterogeneous variances (e.g. <span class="func">varIdent</span>). It can also do nonlinear models of specific functional forms (e.g. <span class="func">SSlogis</span>).  However, it cannot generalize beyond the gaussian distribution.
+The <span class="basepack">nlme</span> package  comes with base R.  It does standard linear and nonlinear (in the predictors) mixed models. It can add correlation structure (e.g. temporal (e.g. <span class="func">corAR</span>) and spatial (e.g. <span class="func">corGaus</span>)), as well as heterogeneous variances (e.g. <span class="func">varIdent</span>). It can also do nonlinear models of specific functional forms (e.g. <span class="func">SSlogis</span>).  However, it cannot generalize beyond the gaussian distribution.
 
 ```{r nlme}
 nlme::lme(y ~ x, random = ~ 1|group)       # basic model
@@ -389,7 +389,7 @@ lme(y ~ x, random = ~ 1|group, correlation = corAR1(form=~time|q))
 
 The <span class="pack">lme4</span> package is one of the most widely used modeling packages in R.  It's one of the best tools for mixed models, and I've used many within R and beyond.  It doesn't do everything, but it does a lot, and fast.  It serves most people's needs just fine.  Beyond that, many other packages work or depend on it, and other packages that extend <span class="pack">lme4</span> will use the same modeling syntax.
 
-In contrast to nlme, <span class="pack">lme4</span> is very efficient but does not have the capability (in a practical way) to do things like further examination of residual structure.  It does however extend the models to the GLM family (and negative binomial with <span class="func">glmer.nb</span>).
+In contrast to <span class="basepack">nlme</span>, <span class="pack">lme4</span> is very efficient, but does not have the capability (in a practical way) to do things like further examination of residual structure.  It does however extend the models to the GLM family (and negative binomial with <span class="func">glmer.nb</span>).
 
 ```{r lme4}
 lme4::lmer(y ~ x + (1|group))
@@ -470,7 +470,7 @@ You won't find much in the way of so-called <span class="emph">fixed effects mod
 
 ## Still other packages
 
-We've mentioned <span class="pack">mgcv</span> (more detail later) and <span class="pack">ordinal.</span> One of the <span class="pack">lme4</span> developers is extending things to more complex models with <span class="pack">glmmTMB</span>.
+We've mentioned <span class="basepack">mgcv</span> (more detail later) and <span class="pack">ordinal.</span> One of the <span class="pack">lme4</span> developers is extending things to more complex models with <span class="pack">glmmTMB</span>.
 
 ## Mixed models list of packages
 
@@ -494,7 +494,7 @@ ordinal_perc = get_perc('ordinal')
 - <span class="pack">geepack</span> `r geepack_perc`%
 - <span class="pack">sandwich</span> `r sandwich_perc`%
 - <span class="pack">ordinal</span> `r ordinal_perc`%
-- <span class="pack">mgcv</span> `r mgcv_perc`%
+- <span class="basepack">mgcv</span> `r mgcv_perc`%
 
 ## Mixed models recommended reading
 
@@ -510,7 +510,7 @@ I have a document [here](https://m-clark.github.io/generalized-additive-models/)
 
 # Additive models
 
-<span class="emph">Generalized additive models</span> incorporate nonlinear, random, and spatial effects all under one roof.  One of the most powerful modeling packages in the R universe, the excellently named Mixed-GAM Computational Vehicle (<span class="pack">mgcv</span>), focuses on these, and even comes with the standard R installation!  
+<span class="emph">Generalized additive models</span> incorporate nonlinear, random, and spatial effects all under one roof.  One of the most powerful modeling packages in the R universe, the excellently named Mixed-GAM Computational Vehicle (<span class="basepack">mgcv</span>), focuses on these, and even comes with the standard R installation!  
 
 My own opinion is that one would do well to use GAMs as a baseline model, as they allow for more complex modeling, but penalize that complexity to help guard against overfitting.  Furthermore, assuming a linear relationship for everything is overly simplistic at best.  GAMs also have close connections to mixed models, so can be seen as an extension of those.  You can find detailed examples of GAMs in my document [here](https://m-clark.github.io/generalized-additive-models).
 
@@ -538,15 +538,15 @@ concurvity(model)   # the GAM form of collinearity
 The package also comes with three approaches to mixed effect models:
 
 - via the <span class="func">s</span> function and `bs='re'`
-- <span class="pack">nlme</span> support via the <span class="func">gamm</span> function
+- <span class="basepack">nlme</span> support via the <span class="func">gamm</span> function
 - <span class="pack">lme4</span> support via the <span class="pack">gamm4</span> package
 
-With the former one can also get at temporal autocorrelation as well via the `correlation` argument.  There is capability to deal with missing values, multivariate outcomes, and handle large data sets. So even if you don't use smooth terms, <span class="pack">mgcv</span> can simply be seen as a means to model additional distributional families.  
+With the former one can also get at temporal autocorrelation as well via the `correlation` argument.  There is capability to deal with missing values, multivariate outcomes, and handle large data sets. So even if you don't use smooth terms, <span class="basepack">mgcv</span> can simply be seen as a means to model additional distributional families.  
 
 
 ## Extensions and other considerations
 
-It took a while, but people have finally started to realize the power of mgcv.
+It took a while, but people have finally started to realize the power of <span class="basepack">mgcv</span>.
 
 ```{r mgcv_getgraph, eval=TRUE, echo=FALSE}
 mgcv_depgraph = get_depgraph('mgcv')
@@ -594,7 +594,7 @@ visNetwork(nodes = nodes_trim,
 
 
 
-For example, most of the R community uses <span class="pack">ggplot2</span> to explore their data visually.  The package comes with <span class="func">geom_smooth</span>, which can actually use <span class="pack">mgcv</span> to display a nonlinear relationship between two variables.  It is only triggered automatically for large samples (> 1000), but you can always use it if desired via the `method` argument. You can even use the various arguments for the smooth term function.
+For example, most of the R community uses <span class="pack">ggplot2</span> to explore their data visually.  The package comes with <span class="func">geom_smooth</span>, which can actually use <span class="basepack">mgcv</span> to display a nonlinear relationship between two variables.  It is only triggered automatically for large samples (> 1000), but you can always use it if desired via the `method` argument. You can even use the various arguments for the smooth term function.
 
 ```{r gam-ggplot}
 ggplot2::ggplot(aes(x, y)) +
@@ -606,7 +606,7 @@ ggplot(aes(x, y)) +
 
 I'll speak more about the package in the Bayesian section, but you can also use the <span class="func">s</span> function when using <span class="pack">brms</span>[^jagam].  Honestly, between those two packages and their respective capabilities, you'll likely need little more for your statistical modeling.  I personally use them all the time.
 
-At one time both <span class="pack">gamlss</span> and <span class="pack">VGAM</span> extended GAMs beyond what <span class="pack">mgcv</span> could do, and they still have some modeling capabilities not seen in <span class="pack">mgcv</span>, especially with regard to other distributional families.  However, <span class="pack">mgcv</span> has since made up some of the more important differences.  Also, I still see some using the R-core <span class="func">spline</span> function and <span class="pack">splines</span> package.  There is nothing to be gained there however.  There is also the <span class="pack">gam</span> package, by Trevor Hastie, the person who wrote one of the most widely cited works on the technique.  While it certainly does the job, it's not on the level of <span class="pack">mgcv</span> in terms of what all it can do.  Unfortunately, some packages that use GAMs use it instead of <span class="pack">mgcv</span>, so you won't have all the nice functionality.
+At one time both <span class="pack">gamlss</span> and <span class="pack">VGAM</span> extended GAMs beyond what <span class="basepack">mgcv</span> could do, and they still have some modeling capabilities not seen in <span class="basepack">mgcv</span>, especially with regard to other distributional families.  However, <span class="basepack">mgcv</span> has since made up some of the more important differences.  Also, I still see some using the R-core <span class="func">spline</span> function and <span class="pack">splines</span> package.  There is nothing to be gained there however.  There is also the <span class="pack">gam</span> package, by Trevor Hastie, the person who wrote one of the most widely cited works on the technique.  While it certainly does the job, it's not on the level of <span class="basepack">mgcv</span> in terms of what all it can do.  Unfortunately, some packages that use GAMs use it instead of <span class="basepack">mgcv</span>, so you won't have all the nice functionality.
 
 In my document on GAMs, I quote Cosma Shalizi, who I think sums up the reason to use the models nicely. So I'll do so again here.
 
@@ -628,7 +628,7 @@ splines_perc = get_perc('splines')
 
 ## Additive models list of packages
 
-- <span class="pack">mgcv</span> `r mgcv_perc`%
+- <span class="basepack">mgcv</span> `r mgcv_perc`%
 - <span class="pack">gam</span> `r gam_perc`%
 - <span class="pack">gamlss</span> `r gamlss_perc`%
 - <span class="pack">VGAM</span> `r VGAM_perc`%
@@ -644,15 +644,15 @@ Feel free to peruse [my document](https://m-clark.github.io/generalized-additive
 
 # Survival analysis
 
-<span class="emph">Survival analysis</span> is very common in biostatistics, epidemiology, public health etc.   It is also commonly called <span class="emph">event-history</span> analysis and <span class="emph">failure analysis</span> (engineering).    The basic idea is that you have a time-based target variable and want to model the time it takes until the event of interest occurs.  
+<span class="emph">Survival analysis</span> is very common in biostatistics, epidemiology, public health etc.   It is also commonly called <span class="emph">event-history</span> analysis and <span class="emph">failure analysis</span> (engineering).    The basic idea is that you have a time-based target variable and want to model the time it takes until some event of interest occurs.  
 
 
-Given the nature of the data you need two things to specify a target variable, the time counter and the indicator for whether the event of interest happened or not.
+Given the nature of the data you need two things to specify a target variable, the time counter and the indicator for whether the event of interest happened or not. The survival package comes with a basic R installation, and brings quite a bit of functionality.
 
 ```{r survival_demo}
 y = survival::Surv(time = t, event = q)  # standard right censored
 y = Surv(t, t>0, type='left')            # left-censored
-survival::coxph(y ~ x)                   # Cox Proportional Hazards Regression
+coxph(y ~ x)                             # Cox Proportional Hazards Regression
 cox.zph(model)                           # test proportional hazards assumption
 anova(model)                             # anova summary table
 coxph(y ~ x + strata(group))             # stratified
@@ -662,7 +662,7 @@ survreg(y ~ x, dist="exponential")       # parametric model
 ```
 
 
-I've mentioned the <span class="pack">rms</span> package before.  It is written by Frank Harrell, a noted biostatistician who also contributed to SAS back in the day.  The package name is an acronym for the title of his book *Regression Modeling Strategies*, and given his discipline, he devotes a lot of content in the text, and functionality in the package, for survival analysis.  The book is a very good modeling book in general.  
+I've mentioned the <span class="pack">rms</span> package before.  It is written by Frank Harrell, a noted biostatistician who also contributed to SAS back in the day.  The package name is an acronym for the title of his book *Regression Modeling Strategies*, and given his discipline, he devotes a lot of content in the text, and functionality in the package, to survival analysis.  The book is a very good modeling book in general.  
 
 ```{r survival_rms}
 y = survival::Surv(time = t, event = status)
@@ -678,7 +678,7 @@ survplot(model)                      # survival plot
 nomogram(model)                      # yep, nomogram
 ```
 
-Along with the extensions that rms provides, you might also find something of use in packages like <span class="pack">Epi</span>, <span class="pack">epitools</span>, or <span class="pack">epiR</span>.  In addition, while the biostats world seems high on splines for their survival models (see e.g. `?rms::rcs`), and so you can incorporate them easily with the models above, likewise some of the additive models packages like <span class="pack">mgcv</span> have functionality for survival analysis.
+Along with the extensions that <span class="pack">rms</span> provides, you might also find something of use in packages like <span class="pack">Epi</span>, <span class="pack">epitools</span>, or <span class="pack">epiR</span>.  In addition, while the biostats world seems high on splines for their survival models (see e.g. `?rms::rcs`), and so you can incorporate them easily with the models above, likewise some of the additive models packages like <span class="basepack">mgcv</span> have functionality for survival analysis.
 
 ```{r survival_gam}
 mgcv::gam(time ~ s(x), weights = status, family = cox.ph)
@@ -705,7 +705,7 @@ epiR_perc = get_perc('epiR')
 - <span class="pack">Epi</span>  `r Epi_perc`%
 - <span class="pack">epitools</span>  `r epitools_perc`%
 - <span class="pack">epiR</span>  `r epiR_perc`%
-- <span class="pack">mgcv</span> `r mgcv_perc`%
+- <span class="basepack">mgcv</span> `r mgcv_perc`%
 
 
 ## Survival analysis recommended reading
@@ -730,7 +730,7 @@ svyratio(numerator = ~y, denominator= ~z, dclus, deff=TRUE)    # survey weighted
 svyglm(y ~ x, data=dstrat, family='binomial')  # standard glm
 ```
 
-There are also some other models like survival models, factor analysis, and more.  One thing I can also mention- don't use the `weights` argument in the base R <span class="func">lm/glm</span> functions with survey weights.  That argument refers to a different type of weight (inverse variance).
+There are also some other models like survival models, factor analysis, and more.  One thing I can also mention- don't use the `weights` argument in the base R <span class="func">lm/glm</span> functions with survey weights.  That argument refers to a different type of weight (inverse variance), and will result in different standard errors.
 
 
 ## Survey analysis list of packages
@@ -1222,7 +1222,7 @@ The following demonstrates an additive mixed model with a cyclic spline for the 
 mgcv::gamm(y ~ s(time, bs='cc'), correlation = corAR1())
 ```
 
-Again the main thing is just to know that tools are available to help process time series, but models may not require it.  The <span class="pack">prophet</span> package expects a date object, whereas <span class="pack">mgcv</span> did not.
+Again the main thing is just to know that tools are available to help process time series, but models may not require it.  The <span class="pack">prophet</span> package expects a date object, whereas <span class="basepack">mgcv</span> did not.
 
 
 
@@ -1679,7 +1679,7 @@ Add tsibble to tseries section
 
 [^nonzero]: Any number besides zero can serve as the focal point (e.g. a one-inflated beta distribution).
 
-[^jagam]: There is the <span class="func">jagam</span> function in <span class="pack">mgcv</span> to use JAGS, but I can't think of a reason to use it over <span class="pack">brms</span>.
+[^jagam]: There is the <span class="func">jagam</span> function in <span class="basepack">mgcv</span> to use JAGS, but I can't think of a reason to use it over <span class="pack">brms</span>.
 
 [^lgc]: Using a mixed model on longitudinal data with <span class="pack">flexmix</span> negates the need to use SEM for what are sometimes called <span class="emph">Latent Class Growth Curve Models</span>, <span class="emph">Growth Mixture Models</span> or <span class="emph">Latent Trajectory Models</span>.  If you need indirect effects, you'll have to use Mplus or similar, and good luck with that.
 
