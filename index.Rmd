@@ -69,11 +69,11 @@ get_depgraph = function(pack) {
 
 This is a quick reference for the modeling syntax and associated packages.  While it covers a lot of ground, it is not meant to be exhaustive, but rather, it provides an easy reference for those new to R, someone trying out an unfamiliar (but otherwise common) technique, or those just interested in comparison to similar approaches in other environments.  It is likely anyone, regardless of R experience, could come across something new, or new to them.  In time, this may be rendered obsolete by the [parsnip package](https://github.com/topepo/parsnip), but until then, this can get you quickly started with many common models.
 
-Preference is given to base R functionality or what are perceived as very commonly used packages.  'Very common' is based on my own knowledge consulting across dozens of disciplines and universities, regularly following the R community, and things like the rankings at [RDocumentation.org](https://rdocumentation.org) and packages listed in [CRAN Task Views](https://www.rdocumentation.org/taskviews).
+Along with noting base R functionality where applicable, preference is given to what are perceived as very commonly used packages.  'Very common' is based on my own knowledge consulting across dozens of disciplines and several universities, regularly following the R community, and things like the rankings at [RDocumentation.org](https://rdocumentation.org) and packages listed in [CRAN Task Views](https://www.rdocumentation.org/taskviews).  My goal is to *not* regurgitate a lengthy list of packages that leaves you no more knowledgeable about where to start than when you began.  Once you use these packages, you will then come across others that you may like or provide additional functionality of interest, but will hopefully have a clearer sense of how to use them.
 
 
 
-#### Miscellaneous
+#### Miscellaneous things to note
 
 In what follows, you will not see any model which I have not run on my own, if not many, many times. For those who want to get more into the implementation of many of these models, I have raw R code that demonstrates many (probably most) of the techniques discussed [here](https://github.com/m-clark/Miscellaneous-R-Code).
 
@@ -86,7 +86,8 @@ What this won't provide:
 - visualization (though some packages will be mentioned for specifically visual approaches)
 - a list of every package that *might* be useful
 
-For some content I will provide recommended reading.  These are texts are mostly those I've benefited from or I would think would be useful to others, especially those just starting out with analysis, at an intermediate stage, or even coming to R from another language.  They are not meant to be a list of seminal works on the subject, though some might be.  I also include the Task View if applicable. The link will take you to Rdocumentation.org, which will list many packages, but the first link is the official Task View, where you will find more details about the packages.
+For some content I will provide recommended reading.  These texts are mostly those I've benefited from personally, or I would think would be useful to others, especially those just starting out with analysis, at an intermediate stage, or even coming to R from another language.  They are not meant to be a list of seminal works on the subject, though some might be.  I also include the Task View if applicable. The link will take you to Rdocumentation.org, which will list many packages, but the first link is the official Task View, where you will find more details about the packages.
+
 
 
 Color coding:
@@ -846,7 +847,7 @@ Often the goal is to find latent structure (or simply dimension reduction) among
 
 ## Mixture models
 
-We'll start with model-based approaches to the problem, typically referred to as <span class="emph">mixture models</span>. A good starting point here is <span class="pack">mclust</span>.  It provides a very easy way to search across a wide variety of cluster types, as well as any number of clusters (including 1 cluster).  You may then select the 'best' solution based on BIC, with is the advantage of a model-based approach.  Furthermore, it provides plots of the search space, the classifications, uncertainty and density plots.
+We'll start with model-based approaches to the problem, typically referred to as <span class="emph">mixture models</span>. A good starting point here is <span class="pack">mclust</span>.  It provides a very easy way to search across a wide variety of cluster types, as well as any number of clusters (including 1 cluster).  You may then select the 'best' solution based on BIC, which is an advantage of a model-based approach.  Furthermore, it provides plots of the search space, the classifications, uncertainty, and density plots.
 
 ```{r cluster_mclus}
 model = mclust::Mclust(X, G = 1:4)
@@ -869,11 +870,11 @@ model = flexmix(yn ~ x, k = 2,
 ```
 
 
-Another type of model, or at least term, you may here with regard to mixture models is <span class="emph">latent class analysis</span>.  The only distinction here is that the data is categorical.  The <span class="pack">poLCA</span> package focuses on this.  It also will allow for modeling the latent classes as an outcome (in distinction to <span class="pack">flexmix</span>), just as you would in standard logistic regression settings.
+Another type of model, or at least term, you may here with regard to mixture models is <span class="emph">latent class analysis</span>.  The only distinction here is that the data is categorical, thus you can still just think of it as factor analysis.  The <span class="pack">poLCA</span> package focuses on this.  It also will allow for modeling the latent classes as an outcome (in distinction to <span class="pack">flexmix</span>), just as you would in standard logistic regression settings.
 
 ```{r cluster_polca}
 # assume X is a matrix of binary indicator variables
-model = poLCA::poLCA(X ~ 1, values, nclass = 2)      # basic cluster analysis
+model = poLCA::poLCA(X ~ 1, values, nclass = 2)      # basic latent class/cluster analysis
 model = poLCA(X ~ x + z, values, nclass = 2)         # add predictors
 poLCA.posterior(model)                               # probability of class membership
 ```
@@ -884,7 +885,7 @@ When it comes to modeling with latent clusters, there's a lot of ways to do so. 
 
 ## Traditional cluster analysis
 
-For traditional cluster analysis based on distance matrices, one doesn't really need to go beyond the base R installation, as it comes with <span class="func">dist</span>, <span class="func">kmeans</span>, <span class="pack">hclust</span> functions, and the <span class="func">recommended</span> package cluster.
+For traditional cluster analysis based on distance matrices, one doesn't really need to go beyond the base R installation, as it comes with <span class="func">dist</span>, <span class="func">kmeans</span>, <span class="pack">hclust</span> functions, and the recommended package <span class="basepack">cluster</span>.
 
 ```{r cluster_traditional}
 X_dist = dist(X)                          # euclidean distances
@@ -934,7 +935,7 @@ cluster_perc = get_perc('cluster')
 
 [Cluster Analysis Task View](https://www.rdocumentation.org/taskviews#Cluster)
 
-@everitt2011cluster Provides an overview of traditional methods in a clean manner.  Can't speak much to more modern references.
+@everitt2011cluster Provides an overview of traditional methods in a clean manner.  I can't speak much to more modern references.
 
 I have a bit on mixture models and latent class analysis from the SEM perspective [here](https://m-clark.github.io/sem/mixture-models).
 
@@ -945,7 +946,7 @@ I have a bit on mixture models and latent class analysis from the SEM perspectiv
 
 <span class="emph">Structural Equation Modeling</span> (SEM) is a very broad technique that encompasses and extends many others, bringing together regression, factor analysis, mixtures models and more. In particular it combines measurement models regarding latent variables and observed variables, and structural models to explore the effects of latent and observed variables on others.
 
-Due to the use of latent variables and other specifics, a special syntax is required to run SEM models, but otherwise it does not require much to get going, at least with the <span class="pack">lavaan</span> package.  For those familiar with Mplus, it and various extensions can do about 90% of what Mplus does[^lavlack], and even spits out results in the same format.
+Due to the use of latent variables and other modeling specifics, a special syntax is required to run SEM models, but otherwise it does not require much to get going, at least with the <span class="pack">lavaan</span> package.  For those familiar with Mplus, it and various extensions can do about 90% of what Mplus does[^lavlack], and even spits out results in the same format.
 
 ## Path Analysis
 
@@ -1031,7 +1032,7 @@ visNetwork(nodes = nodes_trim,
            physics = T)
 ```
 
-In terms of Mplus style extensions, note <span class="pack">lavaan.survey</span> (survey design), <span class="pack">blavaan</span> (Bayesian), and <span class="pack">semTools</span>, which adds things like multiple imputation, measurement invariance testing, additional fit indices and a lot more.
+In terms of Mplus style extensions, note <span class="pack">lavaan.survey</span> (survey design), <span class="pack">blavaan</span> (Bayesian), and <span class="pack">semTools</span>, which add things like multiple imputation for missing data, measurement invariance testing, additional fit indices, and a lot more.
 
 A couple others I will note but with which I haven't used yet.  I note them because I will at some point, and their intentions are in the right place. One is <span class="pack">regsem</span>.  The vast majority of SEM models are grossly overfit, estimating dozens of parameters with only a couple hundred observations.  Such a package can surely assist with this problem, though I predict many will not like what they find (even though it will be a better result).  In addition, while writing this I came across the <span class="pack">lavaanPlot</span> package, which might save me at least 50% of the headache of using <span class="pack">Diagrammer</span>.
 
@@ -1078,19 +1079,21 @@ psych_perc = get_perc('psych')
 
 [Psychometrics Task View](https://www.rdocumentation.org/taskviews#Psychometrics)
 
-My doc on SEM covers a lot of ground and provides more extensive examples.
+My [doc on SEM](https://m-clark.github.io/sem/) covers a lot of ground and provides more extensive examples.
 
 @kline2015principles is a very popular applied treatment. See the classic @bollen1989 for more details regarding standard models.
 
+[William Revelle's freely available text](http://www.personality-project.org/r/book/)
 
+[Modern Psychometrics with R](https://www.springer.com/us/book/9783319931753#aboutBook)
 
 # Graphical models
 
-SEM can be seen as a very large subset of what are generally called <span class="emph">graphical models</span>, where variables are represented by <span class="emph">nodes</span> (sometimes called vertices) and the relations among them are represented by <span class="emph"></span> (sometimes called arcs).  Edges may be <span class="emph">directed</span> (i.e. have arrows) or <span class="emph">undirected</span>.  With directed (acyclic) graphs (DAG), we get into things like causal modeling, SEM, bayesian networks, etc. With undirected graphs, often called a Markov random fields, applications are in network models, spatial analysis, and more.
+SEM can be seen as a very large subset of what are generally called <span class="emph">graphical models</span>, where variables are represented by <span class="emph">nodes</span> (sometimes called vertices) and the relations among them are represented by <span class="emph">edges</span> (sometimes called arcs).  Edges may be <span class="emph">directed</span> (i.e. have arrows) or <span class="emph">undirected</span>.  With directed (acyclic) graphs (DAG), we get into things like causal modeling, SEM, bayesian networks, etc. With undirected graphs, often called a Markov random fields, applications are in network models, spatial analysis, and more.
 
 In most cases there are two main approaches to running such models.  One is where two data sets are provided, one which specifies the nodes and various attributes associated with them. In addition, one has an edge list or data frame that specifies the nodes from which a connection begins, the nodes to which they connect, and possibly a column specifying the value/weight for the connection.  The other approach regards an <span class="emph">adjacency matrix</span>, which is like a correlation or (inverse) distance matrix, where the off-diagonal values specify connections among the nodes, and may be simply binary or comprise continuous <span class="emph">weights</span>.
 
-One of the more popular and powerful packages is <span class="pack">igraph</span>, and even when you're using others, they are often using it under the hood. Given the right data, one can create a graph object, and then get any number of statistics, visualize it, or whatever.  A lot of it is for the creation of graphs, but normally graphs are too big to do by hand and/or you'd have the data already, and it'd be easier to create an adjacency matrix from your typical data frame and work from there.
+One of the more popular and powerful packages is <span class="pack">igraph</span>, and even when you're using others, they are often using it under the hood. Given the right data, one can create a graph object, and then get any number of statistics, visualize it, or whatever.  A lot of it is geared toward the creation of graphs, but normally graphs are too big to do by hand and/or you'd have the data already, and it'd be easier to create an adjacency matrix from your typical data frame and work from there.
 
 ```{r gm_igraph, echo=-1}
 # g = igraph::make_graph("Zachary")  # a social network
@@ -1111,7 +1114,7 @@ The basic plot functionality for <span class="pack">igraph</span> is... basic.  
 
 ### Bayesian networks
 
-A package that's useful for <span class="emph">bayesian networks</span>, or probabilistic DAG, is <span class="pack">bnlearn.</span>  In this case we are looking for a graphical structure based on the data we have. The package allows for model fitting such that you could essentially duplicate a path analysis SEM-style, but the strength is in the model search and selection via a variety algorithms, possibly with cross-validation.  It can work with binary, continuous, or a mix of variables.  With blacklists and whitelists, one can impose theoretical structure on the search such that some connections are always present while others are forbidden.
+A package that's useful for <span class="emph">bayesian networks</span>, or probabilistic DAG, is <span class="pack">bnlearn.</span>  In this case we are looking for a graphical structure based on the data we have. The package allows for model fitting such that you could essentially duplicate a path analysis SEM-style, but the strength is in the model search and selection via a variety algorithms, possibly with cross-validation.  It can work with binary, continuous, or a mix of those.  With <span class="emph">blacklists</span> and <span class="emph">whitelists</span>, one can impose theoretical structure on the search such that some connections are always present while others are forbidden.
 
 ```{r gm_bnlearn}
 model = bnlearn::gs(X, blacklist = bl)   # grow-shrink algorithm with a blacklist
@@ -1176,7 +1179,7 @@ There are several Use R! series entries for graphical models and network analysi
 
 # Time series
 
-With time series data, there isn't really a specific model of concern, and in general, many models you might want to run can't do anything special with a time-series class object.  For example, for a specific situation with observations over time, one could run a mixed model, a GAM, a gaussian process model, an ARIMA model, hidden markov model, or a recurrent neural network.  However, there is concern about how to deal with the data itself even for basic processing and visualization.
+With time series data, there isn't really a specific model of concern, and in general, many models you might want to run can't do anything special with a time-series class object[^time_within_model].  For example, for a specific situation with observations over time, one could run a mixed model, a GAM, a gaussian process model, an ARIMA model, hidden markov model, or a recurrent neural network.  However, there is concern about how to deal with the data itself, even for basic processing and visualization.
 
 To begin, note that there is a lot in the base R installation for dealing with time-based objects.
 
@@ -1202,10 +1205,12 @@ zoo::window(Series)
 
 lubridate::as_date(myDates)
 ymd(myDates)                # convert to YYYY-MM-DD format
-hour(myDates)               # Extract hours
+hour(myDates)               # extract hours from a date object
 ```
 
-For modeling, again that depends on many things and may just be one of many models already demonstrated.  I'll mention <span class="pack">forecast</span> as a means to get started with traditional models like auto-regressive moving average and state-space models (with tidy piping functionality), and <span class="pack">prophet</span>, an offering by Facebook that uses Stan (see Bayesian section).
+Newer packages like <span class="pack">tsibble</span> and <span class="pack">tibbletime</span> express to treat whole (tidy) data frames with a time-oriented context, and allow functionality for filling in missing time points, windowing functions, and more.
+
+For modeling, again that depends on many things and may just be one of many models already demonstrated.  I'll mention <span class="pack">forecast</span> as a means to get started with traditional models like auto-regressive moving average and state-space models (with 'tidy' piping functionality), and <span class="pack">prophet</span>, an offering by Facebook that uses Stan (see Bayesian section).
 
 ```{r ts_models}
 forecast::auto.arima(Series) %>% plot()
@@ -1235,6 +1240,8 @@ zoo_perc = get_perc('zoo')
 forecast_perc = get_perc('forecast')
 prophet_perc = get_perc('prophet')
 lubridate_perc = get_perc('lubridate')
+lubridate_perc = get_perc('tsibble')
+lubridate_perc = get_perc('tibbletime')
 ```
 
 
@@ -1290,12 +1297,12 @@ visNetwork(nodes = nodes_trim,
 
 
 
-A lot of <span class="pack">sp</span>, and its corresponding Use R! book, is geared toward creating a map from scratch, which is great, but often rarely needed, as typically one already has map data, e.g. in the form of shape files, and wants to simply import and then model or visualize it.  It also uses lattice and base R for visualization, and is inordinately slow to visualize its products.   While sp has been around for a long time, the newer <span class="pack">sf</span> ([simple features](https://en.wikipedia.org/wiki/Simple_Features)) package will eventually supersede it (or at least that's the plan), so I'll give a quick example.
+A lot of <span class="pack">sp</span>, and its corresponding Use R! book, is geared toward creating a map from scratch, which is great, but often rarely needed, as typically one already has map data, e.g. in the form of shape files, and wants to simply import and then model or visualize it.  It also uses <span class="basepack">lattice</span> and base R for visualization, and is inordinately slow to visualize its products.   While <span class="pack">sp</span> has been around for a long time, the newer <span class="pack">sf</span> ([simple features](https://en.wikipedia.org/wiki/Simple_Features)) package will eventually supersede it (or at least that's the plan), so I'll give a quick example.
 
 ```{r spatial_sf}
-map_obj = sf::st_read("Shapefile.shp")
+map_obj = sf::st_read("Shapefile.shp")  # read in a shapefile
 plot(map_obj)
-head(map_obj)         # spatial data.frame
+head(map_obj)                           # spatial data.frame
 
 world1 = st_as_sf(maps::map('world', plot = FALSE, fill = TRUE))  # convert maps object to sf
 ggplot2::ggplot() + geom_sf(data = world1)                        # plot with ggplot2
@@ -1321,14 +1328,15 @@ model = gam(y ~ s(x) + s(geog_units, bs='mrf', xt=polygons))   # discrete space 
 
 The <span class="pack">maptools</span> package allows for easy conversion and combining of <span class="pack">sp</span> objects, and provides additional useful functions. For modeling, Bayesian approaches, like those that [R-INLA](http://www.r-inla.org) provides, are common in the spatial realm.
 
-For visualization, use <span class="pack">maps</span> for a quick peek and subsequent conversion to <span class="pack">sp</span> object (via maptools). For pretty (and often pretty easy) visualizations,  geom_sf (in ggplot2), <span class="pack">ggmap</span>, <span class="pack">mapview</span>, <span class="pack">leaflet</span>, and <span class="pack">plotly</span>.
+For visualization, use <span class="pack">maps</span> for a quick peek and subsequent conversion to <span class="pack">sp</span> object (via maptools). For pretty (and often pretty easy) visualizations,  <span class="func">geom_sf</span> (in <span class="pack">ggplot2</span>), <span class="pack">ggmap</span>, <span class="pack">mapview</span>, <span class="pack">leaflet</span>, and <span class="pack">plotly</span>.
 
-Note also that there are a lot of packages being used under the hood, e.g. <span class="pack">rgeos</span>, <span class="pack">rgdal</span>, but which you won't use directly. In general, spatial tools, especially for visualization, have come a long way relatively recently, so you'll best want to investigate to see what's out there regularly.  
+Note also that there are a lot of packages being used under the hood, e.g. <span class="pack">rgeos</span>, <span class="pack">rgdal</span>, but which you probably won't use directly. In general, spatial tools, especially for visualization, have come a long way relatively recently, so you'll best want to investigate to see what's out there regularly.  
 
 ## Spatial list of packages
 
 
 ```{r spatial_percs, eval=TRUE, echo=FALSE}
+spatial_perc = get_perc('spatial')
 sp_perc = get_perc('sp')
 sf_perc = get_perc('sf')
 spdep_perc = get_perc('spdep')
@@ -1343,6 +1351,7 @@ rgdal_perc = get_perc('rgdal')
 ```
 
 
+- <span class="basepack">spatial</span> `r spatial_perc`%
 - <span class="pack">sp</span> `r sp_perc`%
 - <span class="pack">sf</span> `r sf_perc`%
 - <span class="pack">spdep</span> `r spdep_perc`%
@@ -1362,7 +1371,7 @@ rgdal_perc = get_perc('rgdal')
 
 [SpatialTemporal Task View](https://www.rdocumentation.org/taskviews#SpatioTemporal)
 
-@bivand2013applied  Not sure how useful this still is as far as how you'd want to go about things these days, but you would likely learn a lot.
+@bivand2013applied  Not sure how useful this still is as far as how you'd want to go about things in R these days, but you would likely learn a lot that will prove useful in thinking about and exploring spatial problems.
 
 
 # Machine learning
@@ -1674,6 +1683,8 @@ caret zelig recipes tm? sjstats car
 
 Add tsibble to tseries section
 
+missing data
+
 # References
 
 [^optim]: Even the author of optim [doesn't recommend it](https://nashjc.wordpress.com/2016/11/10/why-optim-is-out-of-date/).
@@ -1686,3 +1697,4 @@ Add tsibble to tseries section
 
 [^lavlack]: Currently <span class="pack">lavaan</span> lacks the incorporation of categorical latent variables (i.e. mixture models), but you have more functionality in R for those elsewhere than you would Mplus. The current <span class="pack">lavaan</span>  also lacks multilevel SEM, but that is a pretty rare model.  There are very minor other differences.
 
+[^time_within_model]: Typically a time-based variable would be treated like any other numeric variable.
