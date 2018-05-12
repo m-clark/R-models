@@ -1179,7 +1179,7 @@ There are several Use R! series entries for graphical models and network analysi
 
 # Time series
 
-With time series data, there isn't really a specific model of concern, and in general, many models you might want to run can't do anything special with a time-series class object[^time_within_model].  For example, for a specific situation with observations over time, one could run a mixed model, a GAM, a gaussian process model, an ARIMA model, hidden markov model, or a recurrent neural network.  However, there is concern about how to deal with the data itself, even for basic processing and visualization.
+With time series data, there isn't really a specific model of concern, and in general, many models you might want to run can't do anything special with a time-series class object[^time_within_model].  For example, for a specific situation with observations over time, one could run a mixed model, a GAM, a gaussian process model, an ARIMA model, hidden Markov model, or a recurrent neural network.  However, there is concern about how to deal with the data itself, even for basic processing and visualization.
 
 To begin, note that there is a lot in the base R installation for dealing with time-based objects.
 
@@ -1591,7 +1591,7 @@ You can learn more about Stan in my document: [Bayesian Basics](https://m-clark.
 
 # Text analysis
 
-Most of text analysis involves serious data munging in order to take the unstructured text and put it into a form that's useful.  What analysis is done once the data is prepared isn't really specific to text.  For example, one might use any classification model for sentiment analysis, and latent dirichlet allocation can be applied to any matrix of counts.  In other instances, there are more text-oriented analyses, e.g. in the realm of deep learning (see keras).
+Most of text analysis involves serious data munging in order to take the unstructured text and put it into a form that's useful.  What analysis is done once the data is prepared isn't really specific to text.  For example, one might use any classification model for sentiment analysis, and latent dirichlet allocation can be applied to any matrix of counts.  In other instances, there are more text-oriented analyses, e.g. in the realm of deep learning (see <span class="pack">keras</span>).
 
 The first thing to know is that there are many tools in the base R installation to deal with text.
 
@@ -1615,7 +1615,7 @@ str_sub(word_vec, start = 5, end = 10)
 
 When it comes to text analysis, there's a lot going on in the R world. Traditionally, there are packages like <span class="pack">tm</span>, <span class="pack">lda</span>, <span class="pack">koRpus</span>, and <span class="pack">topicmodels</span>.  More recently, there are ones that make things easier, faster, or add functionality. These include <span class="pack">tidytext</span>, <span class="pack">text2vec</span>, and <span class="pack">quanteda</span>.
 
-The following assumes a tidy text data frame, where you have a column that notes the document, a column for the words in the document.  You can use basic <span class="pack">dplyr</span> functionality to remove stopwords and get word counts, then others to create the objects needed for further processing, and eventually analysis.  The following is an example of a topic modeling approach.
+The following assumes a tidy text data frame, where you have a column that notes the document, a column for the words in the document.  You can use basic <span class="pack">dplyr</span> functionality to remove stop-words and get word counts, then others to create the objects needed for further processing, and eventually analysis.  The following is an example of a topic modeling approach.
 
 ```{r text_easy}
 lda_model = text2vec::LDA$new(n_topics = 10)   # topic model setup
@@ -1628,9 +1628,9 @@ processed_text %>%
   text2vec::lda_model$fit_transform()    # fit a fast LDA
 ```
 
-Examples of the intial processing can be found with [tidytext](https://cran.r-project.org/web/packages/tidytext/vignettes/tidytext.html) documentation, though folks very familiar with <span class="pack">dplyr</span> will see what's going on clearly.  In short, standard text processing in R is just about as easy as it can be.  Your biggest problem will be dealing with large amounts of text, for which R's memory hungry approach is not well suited.
+Examples of the initial processing can be found with [tidytext](https://cran.r-project.org/web/packages/tidytext/vignettes/tidytext.html) documentation, though folks very familiar with <span class="pack">dplyr</span> will see what's going on clearly.  In short, standard text processing in R is just about as easy as it can be.  Your biggest problem will be dealing with large amounts of text, for which R's memory hungry approach is not well suited.
 
-As far as text-specific analysis goes, consider some packages like <span class="pack">stm</span>, <span class="pack">text2vec</span>, <span class="pack">quanteda</span>.
+As far as text-specific analysis goes, consider some packages like <span class="pack">stm</span> (structured topic models), <span class="pack">text2vec</span> (text embeddings and more), <span class="pack">quanteda</span> (misc processing and analysis), and <span class="pack">spacyr</span> (wrapper for the Python module).
 
 ## Text analysis list of packages
 
@@ -1645,6 +1645,7 @@ tidytext_perc = get_perc('tidytext')
 quanteda_perc = get_perc('quanteda')
 text2vec_perc = get_perc('text2vec')
 stm_perc = get_perc('stm')
+spacyr_perc = get_perc('spacyr')
 keras_perc = get_perc('keras')
 ```
 
@@ -1659,6 +1660,7 @@ keras_perc = get_perc('keras')
 - <span class="pack">quanteda</span> `r quanteda_perc`%
 - <span class="pack">text2vec</span> `r text2vec_perc`%
 - <span class="pack">stm</span> `r stm_perc`%
+- <span class="pack">spacyr</span> `r spacyr_perc`%
 - <span class="pack">keras</span>`r keras_perc`%  
 
 
@@ -1667,6 +1669,33 @@ keras_perc = get_perc('keras')
 [Task View](https://www.rdocumentation.org/taskviews#NaturalLanguageProcessing)
 
 You can find detailed examples in my document [here](https://m-clark.github.io/text-analysis-with-R/).
+
+
+# Missing data
+
+In some modeling situations, you may have data that has enough missing values to warrant doing something about it, else you will lose a good chunk of your data when it comes to analysis.  There are a couple packages of note here, including <span class="pack">mice</span>, <span class="pack">Amelia</span>, and <span class="pack">missForest.</span>  Packages that are oriented toward SEM, e.g. <span class="pack">lavaan</span>, will often provide full information maximum likelihood (<span class="pack">semTools</span> adds multiple imputation and other approaches to <span class="pack">lavaan</span>).  I'll provide a simple example with <span class="pack">mice</span> (Multiple Imputation with Chained Equations).  The basic approach is to create several imputed (i.e. now complete) data sets, run the desired model on each, and combine the results.
+
+```{r missing_mice}
+# 5 imputed data sets via predictive mean matching
+imputed_data = mice::mice(mydata, method = "pmm", m = 5)
+imputed_results = with(imputed_data, lm(y ~ x))   # regression model on each imputed data set
+final_model = pool(imputed_results)               # combine results via Rubin's rules
+summary(final_model)
+```
+
+The <span class="pack">mice</span> package has a ton of functionality, and several packages extend it, and it even comes with a text, so if you're going to use multiple imputation, consider it strongly.  
+
+```{r miss_percs, eval=TRUE, echo=FALSE}
+mice_perc = get_perc('mice')
+Amelia_perc = get_perc('Amelia')
+missForest_perc = get_perc('missForest')
+```
+
+
+- <span class="pack">mice</span> `r mice_perc`%
+- <span class="pack">Amelia</span> `r Amelia_perc`%
+- <span class="pack">missForest</span> `r missForest_perc`%
+
 
 
 # Discipline specific
@@ -1679,15 +1708,12 @@ Here are some discipline-specific task views that have not already been mentione
 - Genetics: [Task View](https://www.rdocumentation.org/taskviews#Genetics)
 - Social Sciences: [Task View](https://www.rdocumentation.org/taskviews#SocialSciences)
 
-# Modeling frameworks and helpers
 
-Probably not enough to (consistently) do much here.
+# Summary
 
-caret zelig recipes tm? sjstats car
+The key idea to running models in R is to know that there is a standard approach for a given situation, and many packages build on that. Different techniques will have different concerns, but usually it will be the case that using one of the primary packages within a given domain will get you pretty far, and if you decide to go with further, the approach will likely be little different with related packages.  Hopefully this document has provided some good starting points for you, allowing you to dive in and have some fun.
 
-# Misc to do
-
-missing data
+<p style="text-align:center; font-family:'Alex Brush'; font-size:200%">Best of luck with your modeling! $\qquad\sim \mathbb{M}$</p> 
 
 # References
 
