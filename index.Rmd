@@ -1376,7 +1376,7 @@ rgdal_perc = get_perc('rgdal')
 
 # Machine learning
 
-Machine learning is more of an approach than a specific set of analysis techniques, though one will find models they won't see in traditional statistical modeling.  For practical purposes, your approach will involve measuring performance on a test (validation, hold-out) set of data rather than the data you fit the model on.
+Machine learning is more of an approach than a specific set of analysis techniques, though one will find models they won't see in traditional statistical modeling.  For practical purposes, your approach will involve measuring performance on a test (validation, hold-out) set of data rather than (just) the data you fit the model on.
 
 Two packages are very popular in this realm, <span class="pack">caret</span> and <span class="pack">mlr</span>, but they work similarly because again, ML is more of a conceptual approach than a technique. We'll demonstrate both on a classification task with a random forest.  
 
@@ -1396,9 +1396,9 @@ preds_rf = predict(model_train, X_test)          # predictions
 confusionMatrix(preds_rf, y_test)                # classification results
 ```
 
-If you use caret for nothing else, the <span class="func">confusionMatrix</span> function is very handy for any classification model.
+If you use <span class="pack">caret</span> for nothing else, the <span class="func">confusionMatrix</span> function is very handy for any classification model.
 
-Here is a similar approach using <span class="pack">mlr.</span>
+Here is a similar approach using <span class="pack">mlr</span>.
 
 ```{r ml_mlr}
 task = mlr::makeClassifTask(data = X, target = "y")   # X is a data.frame with all variables
@@ -1418,6 +1418,8 @@ calculateConfusionMatrix(preds_rf, relative = T)
 
 Both packages offer a very wide variety of ways to tune and customize your approach, and offer literally hundreds of models between them.  Some other packages that offer some specific models (accessible by <span class="pack">caret</span> or <span class="pack">mlr</span> if desired) that one might want to be aware of are <span class="pack">e1071</span>, <span class="pack">glmnet</span>, <span class="pack">randomForest</span>, and <span class="pack">xgboost</span>.  For understanding such models, consider <span class="pack">lime</span>.
 
+When it comes to larger data and deep learning models, you may want to investigate tools like <span class="pack">sparklyr</span>, <span class="pack">h20</span>, and <span class="pack">keras</span>.  Development is very recent and rapid in this domain, so you'll need to keep up with it.
+
 
 ## Machine Learning list of packages
 
@@ -1429,6 +1431,9 @@ glmnet_perc = get_perc('glmnet')
 randomForest_perc = get_perc('randomForest')
 xgboost_perc = get_perc('xgboost')
 lime_perc = get_perc('lime')
+sparklyr_perc = get_perc('sparklyr')
+h2o_perc = get_perc('h2o')
+keras_perc = get_perc('keras')
 ```
 
 
@@ -1439,6 +1444,9 @@ lime_perc = get_perc('lime')
 - <span class="pack">randomForest</span> `r randomForest_perc`%
 - <span class="pack">xgboost</span> `r xgboost_perc`%
 - <span class="pack">lime</span> `r lime_perc`%
+- <span class="pack">sparklyr</span> `r sparklyr_perc`%
+- <span class="pack">h2o</span> `r h2o_perc`%
+- <span class="pack">keras</span> `r keras_perc`%
 
 
 ## Machine Learning recommended reading
@@ -1480,7 +1488,7 @@ MCMCglmm::MCMCglmm(PO ~ x + z, burnin = 1000, nitt = 5000, thin = 10, random =  
 
 ## Stan
 
-Many of those packages are seeing decreased use because of <span class="emph">Stan</span>. Stan is a probabilistic programming language developed by a very smart group of people at Columbia, and whose development has very rapidly enabled many people to jump in and get their Bayesian analysis done quickly, and explore the results with ease.  The following shows the rstan ecosystem.
+Many of those packages are seeing decreased use because of <span class="emph">Stan</span>. Stan is a probabilistic programming language developed by a very smart group of people at Columbia, and whose development has very rapidly enabled many people to jump in and get their Bayesian analysis done quickly, and explore the results with ease.  The following shows the <span class="pack">rstan</span> ecosystem.
 
 
 ```{r stan_getgraph, eval=TRUE, echo=FALSE}
@@ -1515,9 +1523,7 @@ visNetwork(nodes = nodes_trim,
 ```
 
 
-
-
-To begin, one can write their own Stan modeling program and use <span class="pack">rstan</span> to run it.  The <span class="pack">rstanarm</span>, developed by the Stan group, makes it as easy to run glm, ordinal, mixed, and multivariate models as it is to run them with standard tools.  The <span class="pack">brms</span> package is ridiculously flexible, allowing one to conduct very complex models without every programming in the Stan language directly.  It has many distributional families, mixed modeling capability, and a variety of means to explore the model after the fact (some of which would apply to <span class="pack">rstanarm</span> as well).
+To begin, one can write their own Stan modeling program and use <span class="pack">rstan</span> to run it.  The <span class="pack">rstanarm</span> package, developed by the Stan group, makes it as easy to run glm, ordinal, mixed, and multivariate models as it is to run them with standard tools.  The <span class="pack">brms</span> package is ridiculously flexible, allowing one to conduct very complex models without ever programming in the Stan language directly.  It has many distributional families, mixed modeling capability, and a variety of means to explore the model after the fact (some of which would apply to <span class="pack">rstanarm</span> as well).
 
 ```{r bayes_stan}
 model = rstan::stan(file='mystandcode.stan', warmup = 1000, iter = 5000, thin = 10, cores=4)  # 4 chains in parallel
@@ -1680,8 +1686,6 @@ Probably not enough to (consistently) do much here.
 caret zelig recipes tm? sjstats car
 
 # Misc to do
-
-Add tsibble to tseries section
 
 missing data
 
