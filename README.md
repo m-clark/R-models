@@ -1,4 +1,4 @@
-<img src="img/Rlogo.svg" style="display:block; margin: 0 auto;">
+<img src="img/Rlogo.svg" style="display:block; margin: 0 auto;" width=50%>
 
 
 This is a quick reference for the R modeling syntax and associated packages.  While it covers a lot of ground, it is not meant to be exhaustive, but rather, it provides an easy reference for those new to R, someone trying out an unfamiliar (but otherwise common) technique, or those just interested in a comparison to similar approaches in other environments.  It can get you quickly started with many common models and extensions.
