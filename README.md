@@ -6,7 +6,7 @@ This is a quick reference for the R modeling syntax and associated packages.  Wh
 
 Models covered:
 
-GLM, other distributions and categorical outcomes, regularized models, mixed models, additive models, survival analysis, survey weighting, PCA/FA, SEM, mixture models/cluster analysis, time series, spatial models, graphical models, machine learning, Bayesian analysis, text analysis, dealing with missing data.
+<span style="color:#00aaff">GLM</span>, <span style="color:#ff5500">other distributions</span> and <span style="color:#00aaff">categorical outcomes</span>, <span style="color:#ff5500">regularized models</span>, <span style="color:#00aaff">mixed models</span>, <span style="color:#ff5500">additive models</span>, <span style="color:#00aaff">survival analysis</span>, <span style="color:#ff5500">survey weighting</span>, <span style="color:#00aaff">PCA/FA</span>, <span style="color:#ff5500">SEM</span>, <span style="color:#00aaff">mixture models/cluster analysis</span>, <span style="color:#ff5500">time series</span>, <span style="color:#00aaff">spatial models</span>, <span style="color:#ff5500">graphical models</span>, <span style="color:#00aaff">machine learning</span>, <span style="color:#ff5500">Bayesian analysis</span>, <span style="color:#00aaff">text analysis</span>, dealing with <span style="color:#ff5500">missing data</span>.
 
 In addition, notable packages and recommended readings are provided.
 
